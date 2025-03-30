@@ -1,15 +1,23 @@
-import { sessionStore } from "../utils/storage";
-import { STORAGE_KEYS } from "../constants/storage.constants";
+// tokenStorage.ts
+import { sessionStore } from "../lib/utils/storage";
+import { STORAGE_KEYS } from "../lib/constants/TokenStorage";
 
+// TokenStorage.ts
 export class TokenStorage {
-  static getAccessToken(): string | null {
-    return sessionStore.get<string>(STORAGE_KEYS.ACCESS_TOKEN);
-  }
-
+  // Lưu token vào sessionStorage
   static setAccessToken(token: string): void {
-    sessionStore.set(STORAGE_KEYS.ACCESS_TOKEN, token);
+    sessionStorage.setItem('accessToken', token);
   }
 
+  // Lấy token từ sessionStorage
+  static getAccessToken(): string | null {
+    return sessionStorage.getItem('accessToken');
+  }
+
+  // Xóa token khỏi sessionStorage
+  static clearAccessToken(): void {
+    sessionStorage.removeItem('accessToken');
+  }
   static removeAccessToken(): void {
     sessionStore.remove(STORAGE_KEYS.ACCESS_TOKEN);
   }
