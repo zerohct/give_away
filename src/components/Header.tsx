@@ -48,7 +48,7 @@ const MainBar: React.FC = () => {
               <NavItem href="/" label="Trang chủ" compact={true} />
 
               {appConfig.features.enableCampaignCreation && (
-                <NavItem href="/campaigns" label="Dự án" compact={true} />
+                <NavItem href="/campaign" label="Dự án" compact={true} />
               )}
 
               {appConfig.features.enableEventRegistration && (
