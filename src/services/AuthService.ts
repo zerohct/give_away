@@ -6,71 +6,74 @@ import { toastMessages } from "@/config/toastConfig";
 import { TokenStorage } from "./TokenStorage";
 
 export class AuthService {
-  // Đăng nhập
- // AuthService.ts
-static async login(data: LoginDTO) {
-  try {
-    const response = await ApiService.post<AuthResponse>(ENDPOINTS.AUTH.LOGIN, data);
+  
+  static async login(data: LoginDTO): Promise<AuthResponse["data"]> {
+    try {
+      const response = await ApiService.post<any>(ENDPOINTS.AUTH.LOGIN, data);
 
-    if (response.success && response.data) {
-      // Lưu token và thông tin người dùng vào localStorage
-      TokenStorage.setAccessToken(response.data.accessToken);  // Lưu token
-      localStorage.setItem('user', JSON.stringify(response.data.user)); // Lưu thông tin người dùng vào localStorage
-      toast.success(toastMessages.LOGIN_SUCCESS);
-      return response.data;
+      if (!response.data || response.data.statusCode !== 200) {
+        throw new Error(response.data?.message || "Đăng nhập thất bại");
+      }
+
+      const { accessToken, user } = response.data.data;
+
+      if (!user || !accessToken) {
+        throw new Error("Dữ liệu đăng nhập không hợp lệ");
+      }
+
+      TokenStorage.setAccessToken(accessToken);
+      localStorage.setItem("user", JSON.stringify(user));
+      return response.data.data;
+    } catch (error: any) {
+      const errorMessage = error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+      throw new Error(errorMessage);
     }
-
-    throw new Error(response.error || toastMessages.LOGIN_ERROR);
-  } catch (error) {
-    toast.error(toastMessages.LOGIN_ERROR);
-    console.error('Login error:', error);
-    throw error;
   }
-}
 
-  // Đăng xuất
   static logout() {
-    // Xóa token và thông tin người dùng khỏi sessionStorage
     TokenStorage.clearAuthData();
     toast.success(toastMessages.LOGOUT_SUCCESS);
   }
 
-  static async register(data: RegisterDTO) {
+  static async register(data: RegisterDTO): Promise<AuthResponse["data"]> {
     try {
-      const response = await ApiService.post<AuthResponse>(ENDPOINTS.AUTH.REGISTER, data);
+      const response = await ApiService.post<any>(ENDPOINTS.AUTH.REGISTER, data);
 
-      // Kiểm tra phản hồi thành công và có dữ liệu, lưu token vào sessionStorage
-      if (response.success && response.data) {
-        TokenStorage.setAccessToken(response.data.accessToken);  // Lưu token
-        toast.success(toastMessages.REGISTER_SUCCESS);
-        return response.data;
+      if (!response.data || response.data.statusCode !== 201) {
+        throw new Error(response.data?.message || "Đăng ký thất bại");
       }
 
-      throw new Error(response.error || "Registration failed");
-    } catch (error) {
+      const { accessToken, user } = response.data.data;
+
+      if (!user || !accessToken) {
+        throw new Error("Dữ liệu đăng ký không hợp lệ");
+      }
+
+      TokenStorage.setAccessToken(accessToken);
+      localStorage.setItem("user", JSON.stringify(user));
+      toast.success(toastMessages.REGISTER_SUCCESS);
+      return response.data.data;
+    } catch (error: any) {
       toast.error(toastMessages.GENERIC_ERROR);
       console.error("Registration error:", error);
       throw error;
     }
   }
-  // Lấy thông tin người dùng (Profile)
-  static async getProfile() {
+
+  static async getProfile(): Promise<AuthResponse["data"]["user"]> {
     try {
-      const response = await ApiService.get<AuthResponse["user"]>(
-        ENDPOINTS.USERS.PROFILE
-      );
-
-      // Nếu có dữ liệu người dùng, trả về dữ liệu
-      if (response.success && response.data) {
-        return response.data;
+      const response = await ApiService.get<AuthResponse>(ENDPOINTS.USERS.PROFILE);
+  
+      if (!response.data || response.data.statusCode !== 200 || !response.data.data) {
+        throw new Error(response.data?.message || "Không thể lấy thông tin người dùng");
       }
-
-      // Nếu có lỗi, ném lỗi cho phép thông báo
-      throw new Error(response.error || "Failed to get profile");
-    } catch (error) {
-      // Xử lý lỗi khi không thể lấy profile
+  
+      return response.data.user;
+    } catch (error: any) {
       console.error("Get profile error:", error);
-      throw error; // Ném lỗi để có thể xử lý ở nơi gọi
+      throw error;
     }
   }
+  
 }
+
