@@ -1,0 +1,176 @@
+/* Container chính */
+.giveaway-register-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background-color: #f8f9fa;
+  }
+  
+  /* Phần bên trái: Form đăng ký */
+  .register-left-section {
+    width: 40%;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: white;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .register-logo img {
+    height: 60px;
+    margin-bottom: 40px;
+    
+  }
+  
+  .register-form-wrapper h2 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #333;
+  }
+  
+  .register-form-wrapper p {
+    color: #666;
+    margin-bottom: 30px;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+    position: relative;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+  
+  .password-group {
+    position: relative;
+  }
+  
+  .password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #666;
+  }
+  
+  .register-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #ff2b6b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .register-button:hover {
+    background-color: #e0245b;
+    transform: scale(1.05);
+  }
+  
+  .register-button:active {
+    transform: scale(0.95);
+  }
+  
+  .register-footer {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .register-footer a {
+    color: #ff2b6b;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .register-footer a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Phần bên phải: Hình ảnh */
+  .register-right-section {
+    width: 60%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .background-image {
+    width: 90%;
+    height: 90%;
+    object-fit: cover;
+    border-radius: 20px;
+  }
+  
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .overlay-content {
+    color: white;
+  }
+  
+  .overlay-content p {
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+  
+  .overlay-button {
+    display: inline-block;
+    padding: 12px 24px;
+    background-color: #ff2b6b;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .overlay-button:hover {
+    background-color: #e0245b;
+    transform: scale(1.05);
+  }
+  
+  .overlay-button:active {
+    transform: scale(0.95);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .giveaway-register-container {
+      flex-direction: column;
+    }
+  
+    .register-left-section,
+    .register-right-section {
+      width: 100%;
+    }
+  
+    .register-right-section {
+      display: none;
+    }
+  }
