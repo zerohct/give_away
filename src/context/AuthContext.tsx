@@ -15,7 +15,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<AuthResponse["user"] | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +30,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedUser && storedUser !== "undefined") {
         try {
           const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && typeof parsedUser === "object" && "email" in parsedUser) {
+          if (
+            parsedUser &&
+            typeof parsedUser === "object" &&
+            "email" in parsedUser
+          ) {
             setUser(parsedUser);
             setIsAuthenticated(true);
 
@@ -36,12 +42,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               await checkAuth();
             }
           } else {
-            console.error("Dữ liệu người dùng trong localStorage không hợp lệ:", parsedUser);
+            console.error(
+              "Dữ liệu người dùng trong localStorage không hợp lệ:",
+              parsedUser
+            );
             localStorage.removeItem("user");
             localStorage.removeItem("accessToken");
           }
         } catch (error) {
-          console.error("Không thể phân tích dữ liệu người dùng từ localStorage:", error);
+          console.error(
+            "Không thể phân tích dữ liệu người dùng từ localStorage:",
+            error
+          );
           localStorage.removeItem("user");
           localStorage.removeItem("accessToken");
         }
@@ -59,13 +71,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await AuthService.login(data);
       if (!response.user.role) {
-        response.user.role = 'user'; // Set default role if not provided
+        response.user.role = "user"; // Set default role if not provided
       }
       setUser(response.user);
       setIsAuthenticated(true);
       toast.success("Đăng nhập thành công!");
     } catch (error: any) {
-      const errorMessage = error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+      const errorMessage =
+        error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
       toast.error(errorMessage);
       throw error;
     }
@@ -78,7 +91,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsAuthenticated(true);
       toast.success("Đăng ký thành công!");
     } catch (error: any) {
-      const errorMessage = error.message || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.";
+      const errorMessage =
+        error.message || "Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.";
       toast.error(errorMessage);
       throw error;
     }
@@ -108,7 +122,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, register, logout, checkAuth }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated,
+        isLoading,
+        login,
+        register,
+        logout,
+        checkAuth,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

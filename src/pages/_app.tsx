@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
 import { AuthProvider } from "../context/AuthContext";
 import { ToastContainer } from "react-toastify";
@@ -6,6 +7,9 @@ import "react-toastify/dist/ReactToastify.css";
 import MainLayout from "../components/layouts/MainLayout";
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const isAdminPage = router.pathname.startsWith("/admin");
+
   return (
     <AuthProvider>
       <ToastContainer
@@ -20,9 +24,13 @@ function MyApp({ Component, pageProps }: AppProps) {
         pauseOnHover
         theme="colored"
       />
-      <MainLayout>
+      {isAdminPage ? (
         <Component {...pageProps} />
-      </MainLayout>
+      ) : (
+        <MainLayout>
+          <Component {...pageProps} />
+        </MainLayout>
+      )}
     </AuthProvider>
   );
 }

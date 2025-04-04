@@ -5,7 +5,7 @@ import { AppConfig } from "./appConfig.interface";
  */
 const appConfig: AppConfig = {
   site: {
-    name: "Zero GiveAway",
+    name: "Zero Give Away",
     description:
       "Cho đi không phải vì người khác cần, mà vì ta hiểu rằng yêu thương là thứ duy nhất càng cho đi càng đầy ắp.",
     url: "https://zerogiveaway.org",

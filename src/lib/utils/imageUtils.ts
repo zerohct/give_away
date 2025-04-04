@@ -1,5 +1,3 @@
-// lib/utils/imageUtils.ts
-
 /**
  * Get optimized image URL (assuming use of a CDN like Cloudinary)
  */

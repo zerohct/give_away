@@ -1,5 +1,3 @@
-// lib/utils/auth.ts
-
 import { storage } from "./storage";
 // import { User } from "../types/models";
 

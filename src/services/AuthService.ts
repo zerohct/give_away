@@ -6,7 +6,6 @@ import { toastMessages } from "@/config/toastConfig";
 import { TokenStorage } from "./TokenStorage";
 
 export class AuthService {
-  
   static async login(data: LoginDTO): Promise<AuthResponse["data"]> {
     try {
       const response = await ApiService.post<any>(ENDPOINTS.AUTH.LOGIN, data);
@@ -21,11 +20,19 @@ export class AuthService {
         throw new Error("Dữ liệu đăng nhập không hợp lệ");
       }
 
+      // Check if user has roles array and extract role
+      if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
+        user.role = user.roles[0].name; // Extract the first role name
+      } else {
+        user.role = "user"; // Default role if not provided
+      }
+
       TokenStorage.setAccessToken(accessToken);
       localStorage.setItem("user", JSON.stringify(user));
       return response.data.data;
     } catch (error: any) {
-      const errorMessage = error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+      const errorMessage =
+        error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
       throw new Error(errorMessage);
     }
   }
@@ -37,7 +44,10 @@ export class AuthService {
 
   static async register(data: RegisterDTO): Promise<AuthResponse["data"]> {
     try {
-      const response = await ApiService.post<any>(ENDPOINTS.AUTH.REGISTER, data);
+      const response = await ApiService.post<any>(
+        ENDPOINTS.AUTH.REGISTER,
+        data
+      );
 
       if (!response.data || response.data.statusCode !== 201) {
         throw new Error(response.data?.message || "Đăng ký thất bại");
@@ -47,6 +57,13 @@ export class AuthService {
 
       if (!user || !accessToken) {
         throw new Error("Dữ liệu đăng ký không hợp lệ");
+      }
+
+      // Set default role for registered users
+      if (user.roles && Array.isArray(user.roles) && user.roles.length > 0) {
+        user.role = user.roles[0].name;
+      } else {
+        user.role = "user";
       }
 
       TokenStorage.setAccessToken(accessToken);
@@ -62,18 +79,24 @@ export class AuthService {
 
   static async getProfile(): Promise<AuthResponse["data"]["user"]> {
     try {
-      const response = await ApiService.get<AuthResponse>(ENDPOINTS.USERS.PROFILE);
-  
-      if (!response.data || response.data.statusCode !== 200 || !response.data.data) {
-        throw new Error(response.data?.message || "Không thể lấy thông tin người dùng");
+      const response = await ApiService.get<AuthResponse>(
+        ENDPOINTS.USERS.PROFILE
+      );
+
+      if (
+        !response.data ||
+        response.data.statusCode !== 200 ||
+        !response.data.data
+      ) {
+        throw new Error(
+          response.data?.message || "Không thể lấy thông tin người dùng"
+        );
       }
-  
+
       return response.data.user;
     } catch (error: any) {
       console.error("Get profile error:", error);
       throw error;
     }
   }
-  
 }
-
