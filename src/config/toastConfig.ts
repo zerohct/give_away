@@ -64,4 +64,9 @@ export const toastMessages = {
   GENERIC_SUCCESS: "Operation completed successfully",
   SESSION_EXPIRED: "Your session has expired. Please log in again",
   NETWORK_ERROR: "Network error. Please check your connection",
+
+  // Campaigns
+  CREATE_SUCCESS: "Campaign created successfully",
+  DELETE_SUCCESS: "Campaign deleted successfully",
+  UPDATE_SUCCESS: "Campaign updated successfully",
 };

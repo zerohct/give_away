@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { AuthResponse, LoginDTO, RegisterDTO } from "../types/AuthType";
+import { AuthResponse, LoginDTO, RegisterDTO } from "../types/index";
 import { AuthService } from "../services/AuthService";
 import { toast } from "react-toastify";
 

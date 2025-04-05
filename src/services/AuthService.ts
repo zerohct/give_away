@@ -1,6 +1,6 @@
 import { ApiService } from "./ApiService";
 import { ENDPOINTS } from "../lib/constants/apiEndpoints";
-import { LoginDTO, AuthResponse, RegisterDTO } from "../types/AuthType";
+import { LoginDTO, AuthResponse, RegisterDTO, User } from "../types/index";
 import { toast } from "react-toastify";
 import { toastMessages } from "@/config/toastConfig";
 import { TokenStorage } from "./TokenStorage";
@@ -77,11 +77,9 @@ export class AuthService {
     }
   }
 
-  static async getProfile(): Promise<AuthResponse["data"]["user"]> {
+  static async getProfile(): Promise<User> {
     try {
-      const response = await ApiService.get<AuthResponse>(
-        ENDPOINTS.USERS.PROFILE
-      );
+      const response = await ApiService.get<any>(ENDPOINTS.USERS.PROFILE);
 
       if (
         !response.data ||
@@ -93,7 +91,27 @@ export class AuthService {
         );
       }
 
-      return response.data.user;
+      const userData = response.data.data;
+
+      // Transform API response to match User interface
+      const user: User = {
+        id: userData.id,
+        email: userData.email,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        username: userData.username,
+        phone: userData.phone || undefined,
+        role:
+          userData.roles &&
+          Array.isArray(userData.roles) &&
+          userData.roles.length > 0
+            ? userData.roles[0].name
+            : "user",
+        avatar: userData.profileImage || undefined,
+        status: userData.isActive ? "active" : "inactive",
+      };
+
+      return user;
     } catch (error: any) {
       console.error("Get profile error:", error);
       throw error;

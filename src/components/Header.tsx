@@ -32,7 +32,6 @@ const MainBar: React.FC = () => {
     const { firstName, lastName } = user;
     return `${firstName || ""} ${lastName || ""}`.trim() || "Người dùng";
   };
-  
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-md sticky top-0 z-50">
@@ -50,15 +49,29 @@ const MainBar: React.FC = () => {
           </div>
 
           {/* Main navigation - Desktop with improved styling and spacing */}
-          <nav className="hidden lg:block mx-4 flex-grow" aria-label="Menu chính">
+          <nav
+            className="hidden lg:block mx-4 flex-grow"
+            aria-label="Menu chính"
+          >
             <ul className="flex justify-center space-x-1">
               <NavItem href="/" label="Trang chủ" compact={true} />
-              {appConfig.features.enableCampaignCreation && <NavItem href="/campaign" label="Dự án" compact={true} />}
-              {appConfig.features.enableEventRegistration && <NavItem href="/events" label="Sự kiện" compact={true} />}
-              {appConfig.features.enableVolunteerRegistration && (
-                <NavItem href="/volunteer" label="TNV" compact={true} tooltip="Tình nguyện viên" />
+              {appConfig.features.enableCampaignCreation && (
+                <NavItem href="/campaign" label="Dự án" compact={true} />
               )}
-              {appConfig.features.enableBlogPosts && <NavItem href="/blog" label="Tin tức" compact={true} />}
+              {appConfig.features.enableEventRegistration && (
+                <NavItem href="/events" label="Sự kiện" compact={true} />
+              )}
+              {appConfig.features.enableVolunteerRegistration && (
+                <NavItem
+                  href="/volunteer"
+                  label="TNV"
+                  compact={true}
+                  tooltip="Tình nguyện viên"
+                />
+              )}
+              {appConfig.features.enableBlogPosts && (
+                <NavItem href="/blog" label="Tin tức" compact={true} />
+              )}
               <NavItem href="/about-us" label="Về chúng tôi" compact={true} />
             </ul>
           </nav>
@@ -92,8 +105,17 @@ const MainBar: React.FC = () => {
                   >
                     <span className="sr-only">Mở menu người dùng</span>
                     <div className="h-9 w-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white hover:shadow-lg transition-all duration-300 transform hover:scale-105">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
                       </svg>
                     </div>
                   </button>
@@ -102,7 +124,9 @@ const MainBar: React.FC = () => {
                 {/* User dropdown menu */}
                 <div
                   className={`${
-                    userMenuOpen ? "transform opacity-100 scale-100" : "transform opacity-0 scale-95 pointer-events-none"
+                    userMenuOpen
+                      ? "transform opacity-100 scale-100"
+                      : "transform opacity-0 scale-95 pointer-events-none"
                   } transition ease-in-out duration-200 absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10`}
                   role="menu"
                   aria-orientation="vertical"
@@ -110,19 +134,39 @@ const MainBar: React.FC = () => {
                   tabIndex={-1}
                 >
                   <div className="px-4 py-2 border-b border-gray-100">
-                  <p className="text-sm font-medium text-gray-700">Xin chào!</p>
-                  <p className="text-xs text-gray-500 truncate">{getFullName()}</p> {/* Hiển thị tên người dùng */}
-                  <p className="text-xs text-gray-500 truncate">{user?.email || "Không có email"}</p> {/* Hiển thị email */}
+                    <p className="text-sm font-medium text-gray-700">
+                      Xin chào!
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {getFullName()}
+                    </p>{" "}
+                    {/* Hiển thị tên người dùng */}
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email || "Không có email"}
+                    </p>{" "}
+                    {/* Hiển thị email */}
                   </div>
-                  <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" role="menuitem">
+                  <Link
+                    href="/user/profile"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200"
+                    role="menuitem"
+                  >
                     Hồ sơ cá nhân
                   </Link>
                   {appConfig.features.enableDonorDashboard && (
-                    <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" role="menuitem">
+                    <Link
+                      href="/dashboard"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200"
+                      role="menuitem"
+                    >
                       Quản lý tài khoản
                     </Link>
                   )}
-                  <Link href="/donations" className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" role="menuitem">
+                  <Link
+                    href="/donations"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200"
+                    role="menuitem"
+                  >
                     Lịch sử ủng hộ
                   </Link>
                   <button
@@ -164,12 +208,36 @@ const MainBar: React.FC = () => {
               >
                 <span className="sr-only">Mở menu chính</span>
                 {mobileMenuOpen ? (
-                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  <svg
+                    className="h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 ) : (
-                  <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  <svg
+                    className="h-6 w-6"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M4 6h16M4 12h16M4 18h16"
+                    />
                   </svg>
                 )}
               </button>
@@ -179,22 +247,39 @@ const MainBar: React.FC = () => {
       </div>
 
       {/* Mobile menu */}
-      <div className={`${mobileMenuOpen ? "block" : "hidden"} lg:hidden`} id="mobile-menu">
+      <div
+        className={`${mobileMenuOpen ? "block" : "hidden"} lg:hidden`}
+        id="mobile-menu"
+      >
         <div className="pt-2 pb-3 space-y-1">
           <MobileNavItem href="/" label="Trang chủ" />
-          {appConfig.features.enableCampaignCreation && <MobileNavItem href="/campaign" label="Dự án" />}
-          {appConfig.features.enableEventRegistration && <MobileNavItem href="/events" label="Sự kiện" />}
-          {appConfig.features.enableVolunteerRegistration && <MobileNavItem href="/volunteer" label="TNV" />}
-          {appConfig.features.enableBlogPosts && <MobileNavItem href="/blog" label="Tin tức" />}
+          {appConfig.features.enableCampaignCreation && (
+            <MobileNavItem href="/campaign" label="Dự án" />
+          )}
+          {appConfig.features.enableEventRegistration && (
+            <MobileNavItem href="/events" label="Sự kiện" />
+          )}
+          {appConfig.features.enableVolunteerRegistration && (
+            <MobileNavItem href="/volunteer" label="TNV" />
+          )}
+          {appConfig.features.enableBlogPosts && (
+            <MobileNavItem href="/blog" label="Tin tức" />
+          )}
           <MobileNavItem href="/about-us" label="Về chúng tôi" />
           {isAuthenticated ? (
             <>
               <div className="border-t border-gray-200 pt-2">
-                <p className="px-3 py-2 text-sm font-medium text-gray-700">Xin chào, {getFullName()}!</p>
-                <p className="px-3 py-2 text-xs text-gray-500 truncate">{user?.email || "Không có email"}</p>
+                <p className="px-3 py-2 text-sm font-medium text-gray-700">
+                  Xin chào, {getFullName()}!
+                </p>
+                <p className="px-3 py-2 text-xs text-gray-500 truncate">
+                  {user?.email || "Không có email"}
+                </p>
               </div>
-              <MobileNavItem href="/profile" label="Hồ sơ cá nhân" />
-              {appConfig.features.enableDonorDashboard && <MobileNavItem href="/dashboard" label="Quản lý tài khoản" />}
+              <MobileNavItem href="/user/profile" label="Hồ sơ cá nhân" />
+              {appConfig.features.enableDonorDashboard && (
+                <MobileNavItem href="/dashboard" label="Quản lý tài khoản" />
+              )}
               <MobileNavItem href="/donations" label="Lịch sử ủng hộ" />
               <button
                 onClick={handleLogout}
@@ -210,7 +295,11 @@ const MainBar: React.FC = () => {
             </>
           )}
           {appConfig.features.enableDonations && (
-            <MobileNavItem href="/donate" label="Ủng hộ ngay" highlight={true} />
+            <MobileNavItem
+              href="/donate"
+              label="Ủng hộ ngay"
+              highlight={true}
+            />
           )}
         </div>
       </div>
@@ -219,12 +308,12 @@ const MainBar: React.FC = () => {
 };
 
 // NavItem component for desktop
-const NavItem: React.FC<{ href: string; label: string; compact?: boolean; tooltip?: string }> = ({
-  href,
-  label,
-  compact = false,
-  tooltip,
-}) => {
+const NavItem: React.FC<{
+  href: string;
+  label: string;
+  compact?: boolean;
+  tooltip?: string;
+}> = ({ href, label, compact = false, tooltip }) => {
   return (
     <li>
       <Link
@@ -242,11 +331,11 @@ const NavItem: React.FC<{ href: string; label: string; compact?: boolean; toolti
 };
 
 // MobileNavItem component for mobile
-const MobileNavItem: React.FC<{ href: string; label: string; highlight?: boolean }> = ({
-  href,
-  label,
-  highlight = false,
-}) => {
+const MobileNavItem: React.FC<{
+  href: string;
+  label: string;
+  highlight?: boolean;
+}> = ({ href, label, highlight = false }) => {
   return (
     <Link
       href={href}

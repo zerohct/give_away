@@ -54,7 +54,7 @@ export const ENDPOINTS = {
 
   // Users
   USERS: {
-    PROFILE: `${API_BASE_URL}/users/profile`,
+    PROFILE: `${API_BASE_URL}/auth/profile`,
     UPDATE_PROFILE: `${API_BASE_URL}/users/profile`,
     DONATION_HISTORY: `${API_BASE_URL}/users/donations`,
     VOLUNTEER_HISTORY: `${API_BASE_URL}/users/volunteer-history`,

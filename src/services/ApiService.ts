@@ -5,7 +5,7 @@ import { TokenStorage } from "./TokenStorage";
 export class ApiService {
   private static getAuthHeader() {
     const token = TokenStorage.getAccessToken();
-    return token ? { Authorization: `Bearer ${token}` } : {} as HeadersInit;  // Trả về header Authorization nếu có token
+    return token ? { Authorization: `Bearer ${token}` } : ({} as HeadersInit);
   }
 
   static async get<T>(url: string) {
