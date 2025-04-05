@@ -1,7 +1,8 @@
+// src/context/CampaignContext.tsx
 import { useState, useEffect, useCallback } from "react";
+import { CampaignService } from "./../services/CampaignService";
+import { Campaign } from "@/types/campaign";
 import {
-  CampaignService,
-  Campaign,
   CreateCampaignDTO,
   UpdateCampaignDTO,
   SearchResponse,
@@ -16,7 +17,6 @@ export const useCampaign = () => {
     null
   );
 
-  // Get all campaigns
   const fetchCampaigns = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -24,13 +24,12 @@ export const useCampaign = () => {
       const data = await CampaignService.getAllCampaigns();
       setCampaigns(data);
     } catch (err: any) {
-      setError(err.message || "Failed to fetch campaigns");
+      setError(err.message || "Không thể tải danh sách chiến dịch.");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Get campaign by ID
   const fetchCampaignById = useCallback(async (id: string | number) => {
     setLoading(true);
     setError(null);
@@ -39,14 +38,14 @@ export const useCampaign = () => {
       setCurrentCampaign(data);
       return data;
     } catch (err: any) {
-      setError(err.message || `Failed to fetch campaign #${id}`);
+      setError(err.message || `Không thể tải chiến dịch #${id}.`);
+      setCurrentCampaign(null); // Đảm bảo currentCampaign là null nếu không tìm thấy
       return null;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Create new campaign
   const createCampaign = useCallback(
     async (campaignData: CreateCampaignDTO, imageFile?: File) => {
       setLoading(true);
@@ -56,11 +55,10 @@ export const useCampaign = () => {
           campaignData,
           imageFile
         );
-        // Update campaigns list after creation
         setCampaigns((prev) => [...prev, newCampaign]);
         return newCampaign;
       } catch (err: any) {
-        setError(err.message || "Failed to create campaign");
+        setError(err.message || "Không thể tạo chiến dịch.");
         return null;
       } finally {
         setLoading(false);
@@ -69,7 +67,6 @@ export const useCampaign = () => {
     []
   );
 
-  // Update campaign
   const updateCampaign = useCallback(
     async (id: string | number, updateData: UpdateCampaignDTO) => {
       setLoading(true);
@@ -79,22 +76,17 @@ export const useCampaign = () => {
           id,
           updateData
         );
-
-        // Update current campaign if it's the one being edited
         if (currentCampaign && currentCampaign.id === updatedCampaign.id) {
           setCurrentCampaign(updatedCampaign);
         }
-
-        // Update campaigns list
         setCampaigns((prev) =>
           prev.map((campaign) =>
             campaign.id === updatedCampaign.id ? updatedCampaign : campaign
           )
         );
-
         return updatedCampaign;
       } catch (err: any) {
-        setError(err.message || `Failed to update campaign #${id}`);
+        setError(err.message || `Không thể cập nhật chiến dịch #${id}.`);
         return null;
       } finally {
         setLoading(false);
@@ -103,27 +95,21 @@ export const useCampaign = () => {
     [currentCampaign]
   );
 
-  // Delete campaign
   const deleteCampaign = useCallback(
     async (id: string | number) => {
       setLoading(true);
       setError(null);
       try {
         await CampaignService.deleteCampaign(id);
-
-        // Remove from campaigns list
         setCampaigns((prev) =>
           prev.filter((campaign) => campaign.id !== Number(id))
         );
-
-        // Clear current campaign if it's the one being deleted
         if (currentCampaign && currentCampaign.id === Number(id)) {
           setCurrentCampaign(null);
         }
-
         return true;
       } catch (err: any) {
-        setError(err.message || `Failed to delete campaign #${id}`);
+        setError(err.message || `Không thể xóa chiến dịch #${id}.`);
         return false;
       } finally {
         setLoading(false);
@@ -132,7 +118,6 @@ export const useCampaign = () => {
     [currentCampaign]
   );
 
-  // Search campaigns
   const searchCampaigns = useCallback(
     async (query: string, page: number = 1, size: number = 10) => {
       setLoading(true);
@@ -146,7 +131,7 @@ export const useCampaign = () => {
         setSearchResults(results);
         return results;
       } catch (err: any) {
-        setError(err.message || "Search failed");
+        setError(err.message || "Tìm kiếm thất bại.");
         return null;
       } finally {
         setLoading(false);
@@ -155,31 +140,26 @@ export const useCampaign = () => {
     []
   );
 
-  // Add media to campaign
   const addCampaignMedia = useCallback(
     async (campaignId: string | number, file: File) => {
       setLoading(true);
       setError(null);
       try {
-        // Convert file to base64
         const base64Image = await CampaignService.fileToBase64(file);
         const media = await CampaignService.addCampaignMedia(
           campaignId,
           base64Image
         );
-
-        // Update current campaign with new media if it's the one being edited
         if (currentCampaign && currentCampaign.id === Number(campaignId)) {
           setCurrentCampaign({
             ...currentCampaign,
             media: [...(currentCampaign.media || []), media],
           });
         }
-
         return media;
       } catch (err: any) {
         setError(
-          err.message || `Failed to upload media for campaign #${campaignId}`
+          err.message || `Không thể tải hình ảnh cho chiến dịch #${campaignId}.`
         );
         return null;
       } finally {
@@ -189,11 +169,9 @@ export const useCampaign = () => {
     [currentCampaign]
   );
 
-  // Load campaigns on initial mount if needed
   useEffect(() => {
-    // You can enable this if you want to load campaigns automatically
-    // fetchCampaigns();
-  }, []);
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   return {
     campaigns,

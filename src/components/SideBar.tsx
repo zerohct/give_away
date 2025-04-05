@@ -5,56 +5,64 @@ import { useAuth } from "../context/AuthContext";
 import appConfig from "../config/appConfig";
 
 interface SidebarItemProps {
+  id: string;
   href: string;
   icon: React.ReactNode;
   text: string;
-  active: boolean;
+  activeId: string;
+  collapsed: boolean;
 }
 
 interface SidebarProps {
   onToggle?: (collapsed: boolean) => void;
+  collapsed?: boolean;
+  activeId?: string;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
+  id,
   href,
   icon,
   text,
-  active,
+  activeId,
+  collapsed,
 }) => {
+  const isActive = id === activeId;
+
   return (
     <Link
       href={href}
-      className={`flex items-center px-4 py-3 text-sm rounded-lg transition-all duration-300 ${
-        active
-          ? "bg-gradient-to-r from-teal-500/20 to-emerald-500/20 text-teal-700 font-medium transform translate-x-2"
+      className={`flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-300 ${
+        isActive
+          ? "bg-gradient-to-r from-teal-500/20 to-emerald-500/20 text-teal-100 font-medium transform translate-x-1 border-l-4 border-teal-400"
           : "text-gray-100 hover:bg-white/10 hover:translate-x-1"
       }`}
     >
       <div
         className={`flex items-center justify-center w-8 h-8 rounded-full ${
-          active ? "bg-teal-500 text-white" : "bg-white/10"
-        } mr-3`}
+          isActive ? "bg-teal-500 text-white" : "bg-white/10"
+        } ${collapsed ? "mx-auto" : "mr-3"}`}
       >
         {icon}
       </div>
-      <span className="transition-all duration-300">{text}</span>
+      {!collapsed && (
+        <span className="transition-all duration-300">{text}</span>
+      )}
     </Link>
   );
 };
 
-const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  onToggle,
+  collapsed = false,
+  activeId = "dashboard",
+}) => {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
   const [greeting, setGreeting] = useState("Xin chào");
-
-  const isActive = (path: string) => {
-    return router.pathname === path || router.pathname.startsWith(`${path}/`);
-  };
 
   const toggleSidebar = () => {
     const newCollapsedState = !collapsed;
-    setCollapsed(newCollapsedState);
     if (onToggle) {
       onToggle(newCollapsedState);
     }
@@ -70,21 +78,21 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
   return (
     <div
       className={`${
-        collapsed ? "w-20" : "w-72"
-      } h-full flex flex-col bg-gradient-to-b from-teal-900 to-emerald-900 transition-all duration-300 rounded-r-xl shadow-xl relative overflow-hidden`}
+        collapsed ? "w-20" : "w-64"
+      } h-full flex flex-col bg-gradient-to-b from-teal-900 to-emerald-900 transition-all duration-300 rounded-r-2xl shadow-xl fixed z-20`}
     >
       {/* Decorative elements */}
       <div className="absolute -top-24 -right-24 w-48 h-48 rounded-full bg-teal-500/20 blur-xl"></div>
       <div className="absolute bottom-20 -left-20 w-40 h-40 rounded-full bg-emerald-400/20 blur-xl"></div>
 
-      <div className="p-6 flex items-center justify-between">
+      <div className="p-3 flex items-center justify-between relative z-20">
         {!collapsed && (
           <div className="flex flex-col">
-            <h1 className="text-2xl font-bold text-white">Từ Thiện</h1>
+            <h1 className="text-xl font-bold text-white">Từ Thiện</h1>
             <p className="text-xs text-emerald-300 opacity-75">Vì cộng đồng</p>
           </div>
         )}
-        {collapsed && (
+        {/* {collapsed && (
           <div className="w-10 h-10 mx-auto bg-white/10 rounded-full flex items-center justify-center">
             <svg
               className="w-6 h-6 text-white"
@@ -101,10 +109,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
               />
             </svg>
           </div>
-        )}
+        )} */}
         <button
           onClick={toggleSidebar}
-          className="text-white hover:text-emerald-300 transition-colors p-2 rounded-full bg-white/5 hover:bg-white/10"
+          className="text-white  hover:text-emerald-300 transition-colors p-2 rounded-full bg-white/5 hover:bg-white/10 z-20"
         >
           <svg
             className="w-5 h-5"
@@ -133,10 +141,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
       </div>
 
       {!collapsed && user && (
-        <div className="px-6 py-3 mt-2">
-          <div className="p-4 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
+        <div className="px-3 py-2 relative z-20">
+          <div className="p-3 rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
             <div className="flex items-center space-x-3 mb-2">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-bold shadow-lg">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-bold shadow-lg">
                 {user.firstName.charAt(0)}
                 {user.lastName.charAt(0)}
               </div>
@@ -147,7 +155,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                 </div>
               </div>
             </div>
-            <div className="text-xs text-gray-300 mt-2 flex items-center">
+            <div className="text-xs text-gray-300 mt-1 flex items-center">
               <svg
                 className="w-3 h-3 mr-1 text-emerald-400"
                 fill="currentColor"
@@ -164,7 +172,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
       )}
 
       {collapsed && user && (
-        <div className="p-4">
+        <div className="p-3 relative z-20">
           <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white font-bold shadow-lg">
             {user.firstName.charAt(0)}
             {user.lastName.charAt(0)}
@@ -172,9 +180,10 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
         </div>
       )}
 
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-800 scrollbar-track-transparent relative z-20">
         <SidebarItem
-          href="/"
+          id="dashboard"
+          href="/admin"
           icon={
             <svg
               className="w-4 h-4"
@@ -191,13 +200,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
               />
             </svg>
           }
-          text={collapsed ? "" : "Trang chủ"}
-          active={isActive("/")}
+          text="Trang chủ"
+          activeId={activeId}
+          collapsed={collapsed}
         />
 
         {/* Donation features */}
         {appConfig.features.enableDonations && (
           <SidebarItem
+            id="donations"
             href="/donations"
             icon={
               <svg
@@ -215,15 +226,17 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                 />
               </svg>
             }
-            text={collapsed ? "" : "Ủng hộ"}
-            active={isActive("/donations")}
+            text="Ủng hộ"
+            activeId={activeId}
+            collapsed={collapsed}
           />
         )}
 
         {/* Campaign features */}
         {appConfig.features.enableCampaignCreation && (
           <SidebarItem
-            href="/campaigns"
+            id="campaigns"
+            href="/admin/campaigns"
             icon={
               <svg
                 className="w-4 h-4"
@@ -240,14 +253,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                 />
               </svg>
             }
-            text={collapsed ? "" : "Chiến dịch"}
-            active={isActive("/campaigns")}
+            text="Chiến dịch"
+            activeId={activeId}
+            collapsed={collapsed}
           />
         )}
 
         {/* Blog features */}
         {appConfig.features.enableBlogPosts && (
           <SidebarItem
+            id="blog"
             href="/blog"
             icon={
               <svg
@@ -265,14 +280,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                 />
               </svg>
             }
-            text={collapsed ? "" : "Bài viết"}
-            active={isActive("/blog")}
+            text="Bài viết"
+            activeId={activeId}
+            collapsed={collapsed}
           />
         )}
 
         {/* Events features */}
         {appConfig.features.enableEventRegistration && (
           <SidebarItem
+            id="events"
             href="/events"
             icon={
               <svg
@@ -290,14 +307,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                 />
               </svg>
             }
-            text={collapsed ? "" : "Sự kiện"}
-            active={isActive("/events")}
+            text="Sự kiện"
+            activeId={activeId}
+            collapsed={collapsed}
           />
         )}
 
         {/* Volunteer features */}
         {appConfig.features.enableVolunteerRegistration && (
           <SidebarItem
+            id="volunteer"
             href="/volunteer"
             icon={
               <svg
@@ -315,17 +334,18 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                 />
               </svg>
             }
-            text={collapsed ? "" : "Tình nguyện viên"}
-            active={isActive("/volunteer")}
+            text="Tình nguyện viên"
+            activeId={activeId}
+            collapsed={collapsed}
           />
         )}
 
-        {/* Admin section - only visible to admins with a divider */}
+        {/* Admin section */}
         {user && user.role === "admin" && (
           <>
             {!collapsed && (
-              <div className="pt-6 pb-2">
-                <div className="flex items-center px-4">
+              <div className="pt-3 pb-1">
+                <div className="flex items-center px-3">
                   <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent flex-grow"></div>
                   <p className="px-2 text-xs font-semibold text-emerald-300 uppercase tracking-wider">
                     Quản trị
@@ -336,6 +356,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
             )}
 
             <SidebarItem
+              id="admin-dashboard"
               href="/admin"
               icon={
                 <svg
@@ -359,11 +380,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                   />
                 </svg>
               }
-              text={collapsed ? "" : "Bảng điều khiển"}
-              active={isActive("/admin")}
+              text="Bảng điều khiển"
+              activeId={activeId}
+              collapsed={collapsed}
             />
 
             <SidebarItem
+              id="admin-users"
               href="/admin/users"
               icon={
                 <svg
@@ -381,15 +404,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
                   />
                 </svg>
               }
-              text={collapsed ? "" : "Người dùng"}
-              active={isActive("/admin/users")}
+              text="Người dùng"
+              activeId={activeId}
+              collapsed={collapsed}
             />
           </>
         )}
       </nav>
 
-      <div className="p-4 mt-auto">
-        <div className={`${!collapsed ? "mb-6 px-2" : ""}`}>
+      <div className="p-3 mt-auto relative z-20">
+        <div className={`${!collapsed ? "mb-2 px-2" : ""}`}>
           <div
             className={`flex items-center ${
               !collapsed
@@ -413,7 +437,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onToggle }) => {
           onClick={logout}
           className={`w-full flex ${
             collapsed ? "justify-center" : ""
-          } items-center px-4 py-3 text-sm text-white rounded-lg bg-white/5 hover:bg-red-500/20 transition-colors`}
+          } items-center px-3 py-2 text-sm text-white rounded-lg bg-white/5 hover:bg-red-500/20 hover:text-red-200 transition-colors`}
         >
           <svg
             className={`w-4 h-4 ${collapsed ? "" : "mr-3"}`}

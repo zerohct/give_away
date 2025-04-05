@@ -1,3 +1,4 @@
+// src/types/campaign.ts
 import { User } from "./user";
 import { CampaignMedia } from "./media";
 import { Comment } from "./comment";
@@ -8,8 +9,8 @@ import { ApiResponse } from "./api";
 export interface Campaign {
   id: number;
   title: string;
-  description?: string;
-  emoji?: string;
+  description: string | null;
+  emoji: string | null; // Đồng bộ với backend: string hoặc null
   category?: string;
   tags?: string[];
   targetAmount: number;
@@ -17,8 +18,8 @@ export interface Campaign {
   donationCount: number;
   status: string;
   slug?: string;
-  startDate: Date;
-  deadline?: Date;
+  startDate: Date; // Giữ kiểu Date
+  deadline?: Date | null; // Có thể null nếu không có deadline
   location?: string;
   isFeatured: boolean;
   createdAt: Date;
@@ -35,7 +36,7 @@ export interface Campaign {
 
 export interface CampaignFormData {
   title: string;
-  description?: string;
+  description: string | null;
   emoji?: string;
   category?: string;
   tags?: string[];

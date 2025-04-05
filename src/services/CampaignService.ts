@@ -1,39 +1,9 @@
+// src/services/CampaignService.ts
 import { ApiService } from "./ApiService";
 import { ENDPOINTS } from "../lib/constants/apiEndpoints";
 import { toast } from "react-toastify";
 import { toastMessages } from "@/config/toastConfig";
-
-// Define types based on backend structure
-export interface Campaign {
-  id: number;
-  title: string;
-  description: string | null;
-  emoji: string | null;
-  category: string | null;
-  location: string | null;
-  tags: string[];
-  targetAmount: number;
-  collectedAmount: number;
-  donationCount: number;
-  status: string;
-  slug: string | null;
-  isFeatured: boolean;
-  startDate: string;
-  deadline: string | null;
-  createdAt: string;
-  updatedAt: string;
-  media?: CampaignMedia[];
-}
-
-export interface CampaignMedia {
-  id: number;
-  mediaType: string;
-  url: string;
-  base64Image?: string;
-  isPrimary: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Campaign, CampaignMedia } from "@/types/index"; // Import từ types/campaign.ts
 
 export interface CreateCampaignDTO {
   title: string;
@@ -65,17 +35,26 @@ export interface ResponseData<T> {
 }
 
 export class CampaignService {
+  // Chuyển đổi dữ liệu từ API sang kiểu Campaign với Date
+  private static transformCampaign(campaign: any): Campaign {
+    return {
+      ...campaign,
+      startDate: new Date(campaign.startDate),
+      deadline: campaign.deadline ? new Date(campaign.deadline) : null,
+      createdAt: new Date(campaign.createdAt),
+      updatedAt: new Date(campaign.updatedAt),
+    };
+  }
+
   static async getAllCampaigns(): Promise<Campaign[]> {
     try {
-      const response = await ApiService.get<ResponseData<Campaign[]>>(
+      const response = await ApiService.get<ResponseData<any[]>>(
         ENDPOINTS.CAMPAIGNS.LIST
       );
-
       if (!response.data || response.data.statusCode !== 200) {
         throw new Error(response.data?.message || "Failed to fetch campaigns");
       }
-
-      return response.data.data;
+      return response.data.data.map(this.transformCampaign);
     } catch (error: any) {
       toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error("Get campaigns error:", error);
@@ -85,15 +64,13 @@ export class CampaignService {
 
   static async getCampaignById(id: string | number): Promise<Campaign> {
     try {
-      const response = await ApiService.get<ResponseData<Campaign>>(
+      const response = await ApiService.get<ResponseData<any>>(
         ENDPOINTS.CAMPAIGNS.DETAILS(id.toString())
       );
-
       if (!response.data || response.data.statusCode !== 200) {
         throw new Error(response.data?.message || "Campaign not found");
       }
-
-      return response.data.data;
+      return this.transformCampaign(response.data.data);
     } catch (error: any) {
       toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error(`Get campaign ${id} error:`, error);
@@ -106,13 +83,9 @@ export class CampaignService {
     imageFile?: File
   ): Promise<Campaign> {
     try {
-      // Handle file upload with form data
       const formData = new FormData();
-
-      // Add all campaign data to form
       Object.entries(campaignData).forEach(([key, value]) => {
         if (value !== undefined) {
-          // Convert arrays to JSON string for tags
           if (key === "tags" && Array.isArray(value)) {
             formData.append(key, JSON.stringify(value));
           } else {
@@ -120,13 +93,10 @@ export class CampaignService {
           }
         }
       });
-
-      // Add image if provided
       if (imageFile) {
         formData.append("image", imageFile);
       }
 
-      // Custom fetch for FormData
       const token = localStorage.getItem("accessToken");
       const response = await fetch(ENDPOINTS.CAMPAIGNS.CREATE, {
         method: "POST",
@@ -135,7 +105,6 @@ export class CampaignService {
       });
 
       const responseData = await response.json();
-
       if (!responseData || responseData.statusCode !== 201) {
         throw new Error(responseData?.message || "Failed to create campaign");
       }
@@ -143,7 +112,7 @@ export class CampaignService {
       toast.success(
         toastMessages.CREATE_SUCCESS || "Campaign created successfully"
       );
-      return responseData.data;
+      return this.transformCampaign(responseData.data);
     } catch (error: any) {
       toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error("Create campaign error:", error);
@@ -156,19 +125,17 @@ export class CampaignService {
     updateData: UpdateCampaignDTO
   ): Promise<Campaign> {
     try {
-      const response = await ApiService.put<ResponseData<Campaign>>(
+      const response = await ApiService.put<ResponseData<any>>(
         ENDPOINTS.CAMPAIGNS.UPDATE(id.toString()),
         updateData
       );
-
       if (!response.data || response.data.statusCode !== 200) {
         throw new Error(response.data?.message || "Failed to update campaign");
       }
-
       toast.success(
         toastMessages.UPDATE_SUCCESS || "Campaign updated successfully"
       );
-      return response.data.data;
+      return this.transformCampaign(response.data.data);
     } catch (error: any) {
       toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error(`Update campaign ${id} error:`, error);
@@ -181,11 +148,9 @@ export class CampaignService {
       const response = await ApiService.delete<ResponseData<null>>(
         ENDPOINTS.CAMPAIGNS.DELETE(id.toString())
       );
-
       if (!response.data || response.data.statusCode !== 200) {
         throw new Error(response.data?.message || "Failed to delete campaign");
       }
-
       toast.success(
         toastMessages.DELETE_SUCCESS || "Campaign deleted successfully"
       );
@@ -202,20 +167,17 @@ export class CampaignService {
     size: number = 10
   ): Promise<SearchResponse> {
     try {
-      // Build URL with query parameters
       const searchUrl = `${
         ENDPOINTS.CAMPAIGNS.LIST
       }/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`;
-
-      const response = await ApiService.get<ResponseData<SearchResponse>>(
-        searchUrl
-      );
-
+      const response = await ApiService.get<ResponseData<any>>(searchUrl);
       if (!response.data || response.data.statusCode !== 200) {
         throw new Error(response.data?.message || "Search failed");
       }
-
-      return response.data.data;
+      return {
+        ...response.data.data,
+        data: response.data.data.data.map(this.transformCampaign),
+      };
     } catch (error: any) {
       toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error("Search campaigns error:", error);
@@ -232,11 +194,9 @@ export class CampaignService {
         `${ENDPOINTS.CAMPAIGNS.DETAILS(campaignId.toString())}/media`,
         { base64Image: imageBase64 }
       );
-
       if (!response.data || response.data.statusCode !== 200) {
         throw new Error(response.data?.message || "Failed to upload media");
       }
-
       toast.success("Media uploaded successfully");
       return response.data.data;
     } catch (error: any) {
@@ -246,7 +206,6 @@ export class CampaignService {
     }
   }
 
-  // Helper method to convert File to base64 string
   static async fileToBase64(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
