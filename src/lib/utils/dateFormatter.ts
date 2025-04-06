@@ -13,8 +13,9 @@ export function formatDate(
   const date =
     typeof dateString === "string" ? new Date(dateString) : dateString;
 
-  if (isNaN(date.getTime())) {
-    return "Invalid date";
+  // Kiểm tra nếu date là không hợp lệ
+  if (!(date instanceof Date) || isNaN(date.getTime())) {
+    return "Invalid date"; // Trả về thông báo nếu không phải kiểu ngày hợp lệ
   }
 
   return new Intl.DateTimeFormat("default", options).format(date);
