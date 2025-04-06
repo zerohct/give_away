@@ -92,27 +92,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <p className="text-xs text-emerald-300 opacity-75">Vì cộng đồng</p>
           </div>
         )}
-        {/* {collapsed && (
-          <div className="w-10 h-10 mx-auto bg-white/10 rounded-full flex items-center justify-center">
-            <svg
-              className="w-6 h-6 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-              />
-            </svg>
-          </div>
-        )} */}
         <button
           onClick={toggleSidebar}
-          className="text-white  hover:text-emerald-300 transition-colors p-2 rounded-full bg-white/5 hover:bg-white/10 z-20"
+          className="text-white hover:text-emerald-300 transition-colors p-2 rounded-full bg-white/5 hover:bg-white/10 z-20"
         >
           <svg
             className="w-5 h-5"
@@ -180,7 +162,27 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto scrollbar-thin scrollbar-thumb-emerald-800 scrollbar-track-transparent relative z-20">
+      <nav
+        className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto relative z-20"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "#059669 transparent",
+        }}
+      >
+        <style jsx>{`
+          nav::-webkit-scrollbar {
+            width: 2mm;
+          }
+          nav::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          nav::-webkit-scrollbar-thumb {
+            background-color: #059669;
+            border-radius: 20px;
+            border: 2px solid transparent;
+          }
+        `}</style>
+
         <SidebarItem
           id="dashboard"
           href="/admin"

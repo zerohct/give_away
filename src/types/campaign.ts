@@ -12,7 +12,7 @@ export interface Campaign {
   description: string | null;
   emoji: string | null; // Đồng bộ với backend: string hoặc null
   category?: string;
-  tags?: string[];
+  tags?: string[] | string;
   targetAmount: number;
   collectedAmount: number;
   donationCount: number;
@@ -39,7 +39,7 @@ export interface CampaignFormData {
   description: string | null;
   emoji?: string;
   category?: string;
-  tags?: string[];
+  tags?: string[] | string;
   targetAmount: number;
   startDate: Date;
   deadline?: Date;

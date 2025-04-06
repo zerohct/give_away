@@ -3,7 +3,8 @@ import { ApiService } from "./ApiService";
 import { ENDPOINTS } from "../lib/constants/apiEndpoints";
 import { toast } from "react-toastify";
 import { toastMessages } from "@/config/toastConfig";
-import { Campaign, CampaignMedia } from "@/types/index"; // Import từ types/campaign.ts
+import { Campaign, CampaignMedia } from "@/types/index";
+import { TokenStorage } from "./TokenStorage";
 
 export interface CreateCampaignDTO {
   title: string;
@@ -84,42 +85,78 @@ export class CampaignService {
   ): Promise<Campaign> {
     try {
       const formData = new FormData();
-      Object.entries(campaignData).forEach(([key, value]) => {
-        if (value !== undefined) {
-          if (key === "tags" && Array.isArray(value)) {
-            formData.append(key, JSON.stringify(value));
-          } else {
-            formData.append(key, value.toString());
-          }
+
+      let tagsArray: string[] = [];
+      if (campaignData.tags) {
+        if (typeof campaignData.tags === "string") {
+          tagsArray = campaignData.tags
+            .split(/[,|]/)
+            .map((tag) => tag.trim())
+            .filter((tag) => tag.length > 0);
+        } else if (Array.isArray(campaignData.tags)) {
+          tagsArray = campaignData.tags.filter(
+            (tag) => typeof tag === "string"
+          );
+        }
+      }
+
+      const fields: (keyof CreateCampaignDTO)[] = [
+        "title",
+        "description",
+        "emoji",
+        "category",
+        "location",
+        "targetAmount",
+        "isFeatured",
+        "startDate",
+        "deadline",
+        "slug",
+      ];
+
+      fields.forEach((field) => {
+        if (campaignData[field] !== undefined) {
+          formData.append(field, String(campaignData[field]));
         }
       });
+
+      formData.append("tags", JSON.stringify(tagsArray));
+
       if (imageFile) {
         formData.append("image", imageFile);
       }
 
-      const token = localStorage.getItem("accessToken");
+      const token = TokenStorage.getAccessToken();
+      const headers: Record<string, string> = {};
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      // Log FormData content for debugging
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
       const response = await fetch(ENDPOINTS.CAMPAIGNS.CREATE, {
         method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        headers,
         body: formData,
       });
 
-      const responseData = await response.json();
-      if (!responseData || responseData.statusCode !== 201) {
-        throw new Error(responseData?.message || "Failed to create campaign");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.message || `Server error: ${response.status}`
+        );
       }
 
-      toast.success(
-        toastMessages.CREATE_SUCCESS || "Campaign created successfully"
-      );
+      const responseData = await response.json();
       return this.transformCampaign(responseData.data);
     } catch (error: any) {
-      toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error("Create campaign error:", error);
       throw error;
     }
   }
-
   static async updateCampaign(
     id: string | number,
     updateData: UpdateCampaignDTO
@@ -170,12 +207,18 @@ export class CampaignService {
       const searchUrl = `${
         ENDPOINTS.CAMPAIGNS.LIST
       }/search?query=${encodeURIComponent(query)}&page=${page}&size=${size}`;
-      const response = await ApiService.get<ResponseData<any>>(searchUrl);
+      const response = await ApiService.get<ResponseData<SearchResponse>>(
+        searchUrl
+      );
+
       if (!response.data || response.data.statusCode !== 200) {
         throw new Error(response.data?.message || "Search failed");
       }
+
       return {
-        ...response.data.data,
+        total: response.data.data.total,
+        page: response.data.data.page,
+        size: response.data.data.size,
         data: response.data.data.data.map(this.transformCampaign),
       };
     } catch (error: any) {

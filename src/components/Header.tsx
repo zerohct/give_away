@@ -56,7 +56,7 @@ const MainBar: React.FC = () => {
             <ul className="flex justify-center space-x-1">
               <NavItem href="/" label="Trang chủ" compact={true} />
               {appConfig.features.enableCampaignCreation && (
-                <NavItem href="/campaign" label="Dự án" compact={true} />
+                <NavItem href="/campaign-index" label="Dự án" compact={true} />
               )}
               {appConfig.features.enableEventRegistration && (
                 <NavItem href="/events" label="Sự kiện" compact={true} />
