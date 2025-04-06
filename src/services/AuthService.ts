@@ -28,7 +28,7 @@ export class AuthService {
       }
 
       TokenStorage.setAccessToken(accessToken);
-      localStorage.setItem("user", JSON.stringify(user));
+      TokenStorage.setUserData(user);
       return response.data.data;
     } catch (error: any) {
       const errorMessage =
@@ -67,7 +67,7 @@ export class AuthService {
       }
 
       TokenStorage.setAccessToken(accessToken);
-      localStorage.setItem("user", JSON.stringify(user));
+      TokenStorage.setUserData(user);
       toast.success(toastMessages.REGISTER_SUCCESS);
       return response.data.data;
     } catch (error: any) {

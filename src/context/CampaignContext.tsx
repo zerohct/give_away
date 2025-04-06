@@ -68,13 +68,18 @@ export const useCampaign = () => {
   );
 
   const updateCampaign = useCallback(
-    async (id: string | number, updateData: UpdateCampaignDTO) => {
+    async (
+      id: string | number,
+      updateData: UpdateCampaignDTO,
+      imageFile?: File
+    ) => {
       setLoading(true);
       setError(null);
       try {
         const updatedCampaign = await CampaignService.updateCampaign(
           id,
-          updateData
+          updateData,
+          imageFile
         );
         if (currentCampaign && currentCampaign.id === updatedCampaign.id) {
           setCurrentCampaign(updatedCampaign);
@@ -145,11 +150,9 @@ export const useCampaign = () => {
       setLoading(true);
       setError(null);
       try {
-        const base64Image = await CampaignService.fileToBase64(file);
-        const media = await CampaignService.addCampaignMedia(
-          campaignId,
-          base64Image
-        );
+        // Pass the file directly without base64 conversion
+        const media = await CampaignService.addCampaignMedia(campaignId, file);
+
         if (currentCampaign && currentCampaign.id === Number(campaignId)) {
           setCurrentCampaign({
             ...currentCampaign,

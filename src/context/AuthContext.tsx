@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import { AuthResponse, LoginDTO, RegisterDTO } from "../types/index";
 import { AuthService } from "../services/AuthService";
+import { TokenStorage } from "../services/TokenStorage";
 import { toast } from "react-toastify";
 
 interface AuthContextType {
@@ -24,43 +25,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedUser = localStorage.getItem("user");
-      const storedToken = localStorage.getItem("accessToken");
+      const storedUser = TokenStorage.getUserData();
+      const storedToken = TokenStorage.getAccessToken();
 
-      if (storedUser && storedUser !== "undefined") {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          if (
-            parsedUser &&
-            typeof parsedUser === "object" &&
-            "email" in parsedUser
-          ) {
-            setUser(parsedUser);
-            setIsAuthenticated(true);
+      if (
+        storedUser &&
+        typeof storedUser === "object" &&
+        "email" in storedUser
+      ) {
+        setUser(storedUser);
+        setIsAuthenticated(true);
 
-            if (storedToken) {
-              await checkAuth();
-            }
-          } else {
-            console.error(
-              "Dữ liệu người dùng trong localStorage không hợp lệ:",
-              parsedUser
-            );
-            localStorage.removeItem("user");
-            localStorage.removeItem("accessToken");
-          }
-        } catch (error) {
-          console.error(
-            "Không thể phân tích dữ liệu người dùng từ localStorage:",
-            error
-          );
-          localStorage.removeItem("user");
-          localStorage.removeItem("accessToken");
+        if (storedToken) {
+          await checkAuth();
         }
       } else {
-        localStorage.removeItem("user");
-        localStorage.removeItem("accessToken");
+        TokenStorage.clearAuthData();
       }
+
       setIsLoading(false);
     };
 
@@ -101,8 +83,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem("user");
-    localStorage.removeItem("accessToken");
     AuthService.logout();
   };
 

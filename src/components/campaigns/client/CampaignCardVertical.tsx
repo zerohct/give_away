@@ -30,17 +30,46 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
       )
     : null;
 
-  // Fix for image URLs - ensure they start with / or are absolute
-  const getValidImageUrl = (url: string | undefined) => {
-    if (!url) return "/images/default-campaign.jpg";
-    if (url.startsWith("http") || url.startsWith("/")) return url;
-    return `/${url}`;
+  // Get the main image - prioritize base64 images
+  const getPrimaryImage = () => {
+    const primaryMedia = campaign.media?.find((m) => m.isPrimary);
+
+    if (primaryMedia?.base64Image) {
+      return primaryMedia.base64Image;
+    }
+
+    // Fallback to URL if no base64 is available
+    if (primaryMedia?.url) {
+      if (
+        primaryMedia.url.startsWith("http") ||
+        primaryMedia.url.startsWith("/")
+      ) {
+        return primaryMedia.url;
+      }
+      return `/${primaryMedia.url}`;
+    }
+
+    return "/images/default-campaign.jpg";
   };
 
-  const mainImage = getValidImageUrl(
-    campaign.media?.find((m) => m.isPrimary)?.url
-  );
-  const userAvatar = getValidImageUrl(campaign.createdBy?.avatar);
+  const mainImage = getPrimaryImage();
+  const isBase64Image = mainImage.startsWith("data:");
+
+  // Get user avatar
+  const getUserAvatar = () => {
+    if (!campaign.createdBy?.avatar) return "/images/default-avatar.jpg";
+    if (campaign.createdBy.avatar.startsWith("data:"))
+      return campaign.createdBy.avatar;
+    if (
+      campaign.createdBy.avatar.startsWith("http") ||
+      campaign.createdBy.avatar.startsWith("/")
+    ) {
+      return campaign.createdBy.avatar;
+    }
+    return `/${campaign.createdBy.avatar}`;
+  };
+
+  const userAvatar = getUserAvatar();
 
   // Calculate donation details
   const donorCount = campaign.donationCount || 0;
@@ -55,6 +84,8 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
         return "bg-blue-100 text-blue-800";
       case "urgent":
         return "bg-red-100 text-red-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -64,14 +95,23 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
     <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full border border-gray-100">
       {/* Image container with overlay elements */}
       <div className="relative h-56 overflow-hidden group">
-        <Image
-          src={mainImage}
-          alt={campaign.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          width={400}
-          height={224}
-          priority={false}
-        />
+        {isBase64Image ? (
+          // Render base64 image
+          <div
+            className="w-full h-full bg-no-repeat bg-center bg-cover transition-transform duration-500 group-hover:scale-105"
+            style={{ backgroundImage: `url(${mainImage})` }}
+          />
+        ) : (
+          // Render regular image with Next.js Image component
+          <Image
+            src={mainImage}
+            alt={campaign.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            width={400}
+            height={224}
+            priority={false}
+          />
+        )}
 
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
@@ -135,12 +175,19 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
             {campaign.createdBy && (
               <div className="flex items-center">
                 <div className="w-5 h-5 rounded-full overflow-hidden mr-1">
-                  <Image
-                    src={userAvatar}
-                    alt={campaign.createdBy.firstName || ""}
-                    width={20}
-                    height={20}
-                  />
+                  {userAvatar.startsWith("data:") ? (
+                    <div
+                      className="w-full h-full bg-no-repeat bg-center bg-cover"
+                      style={{ backgroundImage: `url(${userAvatar})` }}
+                    />
+                  ) : (
+                    <Image
+                      src={userAvatar}
+                      alt={campaign.createdBy.firstName || ""}
+                      width={20}
+                      height={20}
+                    />
+                  )}
                 </div>
                 <span>{campaign.createdBy.firstName || "Ẩn danh"}</span>
               </div>

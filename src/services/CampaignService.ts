@@ -159,20 +159,67 @@ export class CampaignService {
   }
   static async updateCampaign(
     id: string | number,
-    updateData: UpdateCampaignDTO
+    updateData: UpdateCampaignDTO,
+    imageFile?: File
   ): Promise<Campaign> {
     try {
-      const response = await ApiService.put<ResponseData<any>>(
-        ENDPOINTS.CAMPAIGNS.UPDATE(id.toString()),
-        updateData
-      );
-      if (!response.data || response.data.statusCode !== 200) {
-        throw new Error(response.data?.message || "Failed to update campaign");
+      const formData = new FormData();
+
+      // Append update data to formData
+      const fields: (keyof UpdateCampaignDTO)[] = [
+        "title",
+        "description",
+        "emoji",
+        "category",
+        "location",
+        "targetAmount",
+        "isFeatured",
+        "startDate",
+        "deadline",
+        "slug",
+      ];
+
+      fields.forEach((field) => {
+        if (updateData[field] !== undefined) {
+          formData.append(field, String(updateData[field]));
+        }
+      });
+
+      // If there is an image file, append it to formData
+      if (imageFile) {
+        formData.append("image", imageFile);
       }
+
+      const token = TokenStorage.getAccessToken();
+      const headers: Record<string, string> = {};
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      // Log FormData content for debugging
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
+      const response = await fetch(ENDPOINTS.CAMPAIGNS.UPDATE(id.toString()), {
+        method: "PUT",
+        headers,
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.message || `Server error: ${response.status}`
+        );
+      }
+
+      const responseData = await response.json();
       toast.success(
         toastMessages.UPDATE_SUCCESS || "Campaign updated successfully"
       );
-      return this.transformCampaign(response.data.data);
+      return this.transformCampaign(responseData.data);
     } catch (error: any) {
       toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error(`Update campaign ${id} error:`, error);
@@ -230,18 +277,38 @@ export class CampaignService {
 
   static async addCampaignMedia(
     campaignId: string | number,
-    imageBase64: string
+    imageFile: File
   ): Promise<CampaignMedia> {
     try {
-      const response = await ApiService.post<ResponseData<CampaignMedia>>(
-        `${ENDPOINTS.CAMPAIGNS.DETAILS(campaignId.toString())}/media`,
-        { base64Image: imageBase64 }
-      );
-      if (!response.data || response.data.statusCode !== 200) {
-        throw new Error(response.data?.message || "Failed to upload media");
+      const formData = new FormData();
+      formData.append("image", imageFile);
+
+      const token = TokenStorage.getAccessToken();
+      const headers: Record<string, string> = {};
+
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
       }
+
+      const response = await fetch(
+        `${ENDPOINTS.CAMPAIGNS.DETAILS(campaignId.toString())}/media`,
+        {
+          method: "POST",
+          headers,
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          errorData?.message || `Server error: ${response.status}`
+        );
+      }
+
+      const responseData = await response.json();
       toast.success("Media uploaded successfully");
-      return response.data.data;
+      return responseData.data;
     } catch (error: any) {
       toast.error(error.message || toastMessages.GENERIC_ERROR);
       console.error(`Upload media for campaign ${campaignId} error:`, error);

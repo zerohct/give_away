@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/context/CampaignContext";
 import CampaignCardVertical from "@/components/campaigns/client/CampaignCardVertical";
+import CampaignDisplaySection from "@/components/campaigns/client/CampaignDisplaySection";
 import { Campaign } from "@/types";
 import {
   Search,
@@ -13,7 +14,6 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-
 const CampaignIndex: React.FC = () => {
   const { campaigns, loading, error, fetchCampaigns } = useCampaign();
   const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
@@ -108,6 +108,39 @@ const CampaignIndex: React.FC = () => {
     statusFilter,
     featuredOnly,
   ]);
+
+  // Format currency function that ensures proper formatting without leading zeros
+  const formatTotalAmount = (amount: number | string): string => {
+    const numericAmount = Number(amount);
+    if (isNaN(numericAmount) || amount === null || amount === undefined) {
+      return "0 ₫";
+    }
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(numericAmount);
+  };
+  // Calculate total funds raised
+  const totalFundsRaised = campaigns.reduce((sum, campaign) => {
+    // First check if collectedAmount exists
+    if (
+      campaign.collectedAmount === undefined ||
+      campaign.collectedAmount === null
+    ) {
+      return sum;
+    }
+
+    // Then ensure it's a number (handle both string and number types)
+    const amount =
+      typeof campaign.collectedAmount === "string"
+        ? parseFloat(campaign.collectedAmount)
+        : campaign.collectedAmount;
+
+    // Only add valid numbers
+    return sum + (isNaN(amount) ? 0 : amount);
+  }, 0);
 
   // Extract unique categories from campaigns
   const categories = [
@@ -214,7 +247,7 @@ const CampaignIndex: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats summary */}
+      {/* Stats summary - FIXED DISPLAY OF FUNDRAISING AMOUNT */}
       <div className="container mx-auto px-4 -mt-8 mb-8 relative z-20">
         <div className="bg-white rounded-xl shadow-xl p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="text-center p-4">
@@ -245,10 +278,7 @@ const CampaignIndex: React.FC = () => {
               <TrendingUp className="w-8 h-8 mx-auto" />
             </div>
             <p className="text-2xl font-bold text-gray-800">
-              {campaigns
-                .reduce((sum, campaign) => sum + campaign.collectedAmount, 0)
-                .toLocaleString()}{" "}
-              đ
+              {formatTotalAmount(totalFundsRaised)}
             </p>
             <p className="text-gray-500">Tổng số tiền gây quỹ</p>
           </div>
@@ -558,32 +588,6 @@ const CampaignIndex: React.FC = () => {
           <button className="bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-8 rounded-lg font-medium transition-colors">
             Tạo chiến dịch ngay
           </button>
-        </div>
-      </div>
-
-      {/* Footer Banner */}
-      <div className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-6 md:mb-0">
-            <h3 className="text-xl font-bold mb-2">
-              Nhận thông báo về các chiến dịch mới
-            </h3>
-            <p className="text-gray-300">
-              Đăng ký để không bỏ lỡ các chiến dịch cần sự giúp đỡ
-            </p>
-          </div>
-          <div className="w-full md:w-1/3">
-            <div className="flex">
-              <input
-                type="email"
-                placeholder="Email của bạn"
-                className="flex-grow px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg transition-colors">
-                Đăng ký
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
