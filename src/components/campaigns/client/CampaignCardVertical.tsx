@@ -1,9 +1,19 @@
-import React from "react";
+import React, { useState } from "react";
 import { Campaign } from "@/types";
 import Link from "next/link";
 import Image from "next/image";
 import { formatCurrency } from "@/lib/utils/format";
-import { Calendar, MapPin, Users, Heart } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  Heart,
+  Sparkles,
+  Clock,
+  Gift,
+  Share2,
+  Eye,
+} from "lucide-react";
 
 interface CampaignCardVerticalProps {
   campaign: Campaign;
@@ -12,6 +22,8 @@ interface CampaignCardVerticalProps {
 const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
   campaign,
 }) => {
+  const [isHovering, setIsHovering] = useState(false);
+
   const progress =
     campaign.collectedAmount && campaign.targetAmount
       ? Math.min(
@@ -79,53 +91,120 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case "active":
-        return "bg-green-100 text-green-800";
+        return "bg-gradient-to-r from-emerald-500/20 to-emerald-600/20 text-emerald-700 border-emerald-200";
       case "completed":
-        return "bg-blue-100 text-blue-800";
+        return "bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-700 border-blue-200";
       case "urgent":
-        return "bg-red-100 text-red-800";
+        return "bg-gradient-to-r from-rose-500/20 to-rose-600/20 text-rose-700 border-rose-200";
       case "pending":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-700 border-amber-200";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-gradient-to-r from-gray-500/20 to-gray-600/20 text-gray-700 border-gray-200";
     }
   };
 
+  const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "active":
+        return <Sparkles size={14} className="mr-1.5" />;
+      case "completed":
+        return <Gift size={14} className="mr-1.5" />;
+      case "urgent":
+        return <Clock size={14} className="mr-1.5" />;
+      default:
+        return null;
+    }
+  };
+
+  // Calculate urgency level for color styling
+  const getUrgencyColor = () => {
+    if (!daysLeft || daysLeft > 10) return "from-indigo-500 to-violet-600";
+    if (daysLeft > 5) return "from-amber-500 to-orange-600";
+    return "from-rose-500 to-red-600";
+  };
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full border border-gray-100">
+    <div
+      className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 flex flex-col h-full border border-gray-100 relative"
+      style={{
+        boxShadow: "0 10px 40px -12px rgba(0, 0, 0, 0.1)",
+      }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+    >
+      {/* Decorative Corner Elements */}
+      <div className="absolute top-0 left-0 w-20 h-20 overflow-hidden z-10">
+        <div className="absolute transform rotate-45 bg-gradient-to-r from-indigo-500/10 to-violet-500/10 w-40 h-6 -top-10 -left-10"></div>
+      </div>
+      <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden z-10">
+        <div className="absolute transform -rotate-45 bg-gradient-to-r from-violet-500/10 to-indigo-500/10 w-40 h-6 -top-10 -right-10"></div>
+      </div>
+
       {/* Image container with overlay elements */}
-      <div className="relative h-56 overflow-hidden group">
+      <div className="relative h-72 overflow-hidden group">
         {isBase64Image ? (
           // Render base64 image
           <div
-            className="w-full h-full bg-no-repeat bg-center bg-cover transition-transform duration-500 group-hover:scale-105"
-            style={{ backgroundImage: `url(${mainImage})` }}
+            className="w-full h-full bg-no-repeat bg-center bg-cover transition-transform duration-1000 ease-out transform-gpu"
+            style={{
+              backgroundImage: `url(${mainImage})`,
+              transform: isHovering ? "scale(1.12)" : "scale(1)",
+            }}
           />
         ) : (
           // Render regular image with Next.js Image component
           <Image
             src={mainImage}
             alt={campaign.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            width={400}
-            height={224}
+            className="w-full h-full object-cover transition-transform duration-1000 ease-out transform-gpu"
+            style={{
+              transform: isHovering ? "scale(1.12)" : "scale(1)",
+            }}
+            width={500}
+            height={300}
             priority={false}
           />
         )}
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-60"></div>
+        {/* Advanced gradient overlay with multiple layers */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-80"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 to-transparent mix-blend-overlay"></div>
 
-        {/* Category pill */}
-        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-xs font-medium">
-          {campaign.category || "Khác"}
+        {/* Subtle Pattern Overlay */}
+        <div
+          className="absolute inset-0 opacity-10 mix-blend-overlay"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 25px 25px, white 2%, transparent 0%), radial-gradient(circle at 75px 75px, white 2%, transparent 0%)",
+            backgroundSize: "100px 100px",
+          }}
+        ></div>
+
+        {/* Action buttons on hover */}
+        <div
+          className={`absolute right-4 top-20 flex flex-col gap-3 transition-all duration-300 transform ${
+            isHovering ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8"
+          }`}
+        >
+          <button className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:bg-white transition-all duration-300 shadow-lg">
+            <Eye size={18} />
+          </button>
+          <button className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:bg-white transition-all duration-300 shadow-lg">
+            <Share2 size={18} />
+          </button>
+        </div>
+
+        {/* Category chip with enhanced design */}
+        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-xs font-semibold shadow-md flex items-center space-x-1.5 border border-gray-100">
+          <div className="w-2 h-2 rounded-full bg-indigo-600"></div>
+          <span>{campaign.category || "Khác"}</span>
         </div>
 
         {/* Status and featured badges */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+        <div className="absolute top-4 right-4 flex flex-col gap-2 items-end">
           {campaign.isFeatured && (
-            <span className="bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center">
-              <Heart size={12} className="mr-1" />
+            <span className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center shadow-md backdrop-blur-sm border border-yellow-300/30">
+              <Heart size={14} className="mr-1.5" />
               Nổi bật
             </span>
           )}
@@ -133,48 +212,24 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
           <span
             className={`${getStatusColor(
               campaign.status
-            )} text-xs font-medium px-3 py-1 rounded-full`}
+            )} text-xs font-semibold px-4 py-2 rounded-full flex items-center border shadow-md backdrop-blur-sm`}
           >
+            {getStatusIcon(campaign.status)}
             {campaign.status}
           </span>
         </div>
 
-        {/* Emoji display */}
-        {campaign.emoji && (
-          <span className="absolute left-3 bottom-3 text-3xl filter drop-shadow-md">
-            {campaign.emoji}
-          </span>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-5 flex-grow flex flex-col">
-        {/* Title */}
-        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 hover:text-indigo-700 transition-colors">
-          <Link href={`/campaigns/${campaign.slug || campaign.id}`}>
-            {campaign.title}
-          </Link>
-        </h3>
-
-        {/* Description */}
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-          {campaign.description || "Không có mô tả cho chiến dịch này."}
-        </p>
-
-        {/* Meta information */}
-        <div className="mt-auto space-y-4">
-          {/* Location and creator */}
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            {campaign.location && (
-              <div className="flex items-center">
-                <MapPin size={14} className="mr-1" />
-                <span>{campaign.location}</span>
-              </div>
-            )}
-
+        {/* Campaign title overlay */}
+        <div className="absolute bottom-0 left-0 right-0 px-6 py-4 bg-gradient-to-t from-black/80 to-transparent">
+          <h3 className="text-xl font-bold text-white line-clamp-1 mb-1">
+            <Link href={`/campaigns/${campaign.slug || campaign.id}`}>
+              {campaign.title}
+            </Link>
+          </h3>
+          <div className="flex items-center text-xs text-white/80">
             {campaign.createdBy && (
-              <div className="flex items-center">
-                <div className="w-5 h-5 rounded-full overflow-hidden mr-1">
+              <div className="flex items-center mr-4">
+                <div className="w-6 h-6 rounded-full overflow-hidden mr-2 ring-2 ring-white/50">
                   {userAvatar.startsWith("data:") ? (
                     <div
                       className="w-full h-full bg-no-repeat bg-center bg-cover"
@@ -184,45 +239,113 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
                     <Image
                       src={userAvatar}
                       alt={campaign.createdBy.firstName || ""}
-                      width={20}
-                      height={20}
+                      width={24}
+                      height={24}
                     />
                   )}
                 </div>
                 <span>{campaign.createdBy.firstName || "Ẩn danh"}</span>
               </div>
             )}
+            {campaign.location && (
+              <div className="flex items-center">
+                <MapPin size={12} className="mr-1 text-white/70" />
+                <span>{campaign.location}</span>
+              </div>
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* Progress bar */}
-          <div>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mb-1">
-              <div
-                className="bg-indigo-600 h-2.5 rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${progress}%` }}
-              ></div>
+      {/* Content with enhanced styling */}
+      <div className="p-6 flex-grow flex flex-col">
+        {/* Description with styled quotation mark */}
+        <div className="relative mb-6 mt-2">
+          <div className="absolute -top-4 -left-1 text-4xl text-indigo-200 font-serif">
+            "
+          </div>
+          <p className="text-gray-600 text-sm pl-4 line-clamp-2 italic">
+            {campaign.description || "Không có mô tả cho chiến dịch này."}
+          </p>
+          <div className="absolute bottom-0 right-0 text-4xl text-indigo-200 font-serif leading-none">
+            "
+          </div>
+        </div>
+
+        {/* Progress section with enhanced styling */}
+        <div className="mt-auto space-y-6">
+          {/* Progress ring and stats */}
+          <div className="flex items-start justify-between">
+            {/* Progress circle */}
+            <div className="relative">
+              <svg width="80" height="80" viewBox="0 0 120 120">
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  fill="none"
+                  stroke="#e2e8f0"
+                  strokeWidth="12"
+                />
+                <circle
+                  cx="60"
+                  cy="60"
+                  r="54"
+                  fill="none"
+                  stroke="url(#progressGradient)"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(339.3 * progress) / 100} ${339.3}`}
+                  strokeDashoffset="0"
+                  transform="rotate(-90 60 60)"
+                />
+                <defs>
+                  <linearGradient
+                    id="progressGradient"
+                    x1="0%"
+                    y1="0%"
+                    x2="100%"
+                    y2="100%"
+                  >
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#8b5cf6" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-xl font-bold text-indigo-700">
+                  {progress}%
+                </span>
+              </div>
             </div>
 
-            <div className="flex justify-between items-center text-sm">
-              <span className="font-medium text-indigo-700">{progress}%</span>
+            {/* Raised amount */}
+            <div className="text-right">
+              <div className="text-2xl font-bold text-gray-900">
+                {formatCurrency(campaign.collectedAmount)}
+              </div>
+              <div className="text-sm text-gray-500">
+                mục tiêu{" "}
+                <span className="font-medium">
+                  {formatCurrency(campaign.targetAmount)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats with glass effect styling */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-3 border border-indigo-100/50">
+              <Users size={16} className="mr-2 text-indigo-600" />
               <span className="font-medium text-gray-700">
-                {formatCurrency(campaign.collectedAmount)} /{" "}
-                {formatCurrency(campaign.targetAmount)}
+                {donorCount} người ủng hộ
               </span>
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="flex items-center justify-between text-xs border-t border-gray-100 pt-4 text-gray-600">
-            <div className="flex items-center">
-              <Users size={14} className="mr-1 text-indigo-500" />
-              <span>{donorCount} người ủng hộ</span>
             </div>
 
             {daysLeft !== null && (
-              <div className="flex items-center">
-                <Calendar size={14} className="mr-1 text-indigo-500" />
-                <span>
+              <div className="flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-3 border border-indigo-100/50">
+                <Calendar size={16} className="mr-2 text-indigo-600" />
+                <span className="font-medium text-gray-700">
                   {daysLeft > 0 ? `Còn ${daysLeft} ngày` : "Đã kết thúc"}
                 </span>
               </div>
@@ -231,15 +354,34 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
         </div>
       </div>
 
-      {/* Action buttons */}
-      <div className="px-5 pb-5 pt-2">
+      {/* Action button with floating effect */}
+      <div className="px-6 pb-6 pt-1">
         <Link
           href={`/campaigns/${campaign.slug || campaign.id}`}
-          className="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-2.5 px-4 rounded-lg font-medium transition-colors"
+          className="block w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white text-center py-3.5 px-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-indigo-500/30 relative overflow-hidden group"
         >
-          Ủng hộ ngay
+          <span className="relative z-10">Ủng hộ ngay</span>
+          <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
+          <div className="absolute -inset-full top-0 block w-1/2 h-full z-5 transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-40 group-hover:animate-shine"></div>
         </Link>
       </div>
+
+      {/* Global card styling - add animation keyframes */}
+      <style jsx>{`
+        @keyframes shine {
+          from {
+            left: -100%;
+            opacity: 0;
+          }
+          to {
+            left: 100%;
+            opacity: 0.3;
+          }
+        }
+        .group-hover\\:animate-shine:hover {
+          animation: shine 1.5s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };

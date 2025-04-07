@@ -51,8 +51,12 @@ export const useCampaign = () => {
       setLoading(true);
       setError(null);
       try {
+        // Đảm bảo isFeatured được truyền đúng giá trị boolean
         const newCampaign = await CampaignService.createCampaign(
-          campaignData,
+          {
+            ...campaignData,
+            isFeatured: Boolean(campaignData.isFeatured), // Đảm bảo là boolean
+          },
           imageFile
         );
         setCampaigns((prev) => [...prev, newCampaign]);

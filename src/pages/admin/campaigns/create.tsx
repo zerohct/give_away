@@ -39,7 +39,7 @@ export default function CreateCampaignPage() {
     location: "",
     tags: [] as string[],
     targetAmount: 0,
-    isFeatured: false,
+    isFeatured: false, // Đảm bảo giá trị mặc định là false
     startDate: new Date(),
     deadline: null as Date | null,
     slug: "",
@@ -91,7 +91,6 @@ export default function CreateCampaignPage() {
       });
     }
 
-    // Clear error for this field if exists
     if (errors[name]) {
       const newErrors = { ...errors };
       delete newErrors[name];
@@ -101,10 +100,10 @@ export default function CreateCampaignPage() {
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: checked,
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [name]: checked, // Cập nhật trực tiếp giá trị checked từ checkbox
+    }));
   };
 
   const handleDateChange = (
@@ -135,6 +134,10 @@ export default function CreateCampaignPage() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(
+      "Submit triggered - isFeatured current value:",
+      formData.isFeatured
+    );
 
     if (!validate()) {
       return;
@@ -144,9 +147,12 @@ export default function CreateCampaignPage() {
       const campaignDto: CreateCampaignDTO = {
         ...formData,
         startDate: formData.startDate.toISOString(),
-        deadline: formData.deadline?.toISOString(),
+        deadline: formData.deadline?.toISOString() || undefined, // Chuyển null thành undefined nếu không có deadline
         tags: formData.tags || [],
+        isFeatured: formData.isFeatured, // Đảm bảo gửi đúng giá trị của isFeatured
       };
+
+      console.log("Campaign DTO being sent:", campaignDto); // Debug log để kiểm tra dữ liệu gửi lên
 
       const newCampaign = await createCampaign(
         campaignDto,
@@ -426,11 +432,15 @@ export default function CreateCampaignPage() {
                             visibility
                           </p>
                         </div>
+                        <p>
+                          Current Feature Status:{" "}
+                          {formData.isFeatured ? "Yes" : "No"}
+                        </p>
                         <label className="relative inline-flex items-center cursor-pointer">
                           <input
                             type="checkbox"
                             name="isFeatured"
-                            checked={formData.isFeatured}
+                            checked={formData.isFeatured} // Đồng bộ trạng thái với formData
                             onChange={handleCheckboxChange}
                             className="sr-only"
                           />

@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import CampaignCardVertical from "./campaigns/client/CampaignCardVertical";
+import CampaignCardIndex from "./campaigns/client/CampaignCardIndex";
 import { useCampaign } from "@/context/CampaignContext";
 import { useEffect } from "react";
 import LoadingSpinner from "./ui/LoadingSpinner";
@@ -14,10 +14,6 @@ const Campaign: React.FC = () => {
     fetchCampaigns();
   }, [fetchCampaigns]);
 
-  const handleClick = (id: string) => {
-    router.push(`/campaign/${id}`);
-  };
-
   if (loading) {
     return <LoadingSpinner className="my-8" />;
   }
@@ -25,6 +21,9 @@ const Campaign: React.FC = () => {
   if (error) {
     return <ErrorMessage message={error} className="my-8" />;
   }
+
+  // Only display the first 3 campaigns
+  const displayedCampaigns = campaigns.slice(0, 3);
 
   return (
     <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
@@ -35,8 +34,8 @@ const Campaign: React.FC = () => {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {campaigns.map((campaign) => (
-            <CampaignCardVertical key={campaign.id} campaign={campaign} />
+          {displayedCampaigns.map((campaign) => (
+            <CampaignCardIndex key={campaign.id} campaign={campaign} />
           ))}
         </div>
 

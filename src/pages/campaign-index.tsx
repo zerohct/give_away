@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useCampaign } from "@/context/CampaignContext";
 import CampaignCardVertical from "@/components/campaigns/client/CampaignCardVertical";
-import CampaignDisplaySection from "@/components/campaigns/client/CampaignDisplaySection";
+
 import { Campaign } from "@/types";
 import {
   Search,
@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
+import CampaignCardVertical2 from "@/components/campaigns/client/CampaignCardVertical2";
 const CampaignIndex: React.FC = () => {
   const { campaigns, loading, error, fetchCampaigns } = useCampaign();
   const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
@@ -522,7 +523,7 @@ const CampaignIndex: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredCampaigns.map((campaign) => (
-                <CampaignCardVertical key={campaign.id} campaign={campaign} />
+                <CampaignCardVertical2 key={campaign.id} campaign={campaign} />
               ))}
             </div>
 

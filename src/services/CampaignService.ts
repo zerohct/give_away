@@ -86,6 +86,7 @@ export class CampaignService {
     try {
       const formData = new FormData();
 
+      // Xử lý tags (giữ nguyên)
       let tagsArray: string[] = [];
       if (campaignData.tags) {
         if (typeof campaignData.tags === "string") {
@@ -100,6 +101,7 @@ export class CampaignService {
         }
       }
 
+      // Thêm các trường vào FormData với xử lý boolean
       const fields: (keyof CreateCampaignDTO)[] = [
         "title",
         "description",
@@ -115,7 +117,14 @@ export class CampaignService {
 
       fields.forEach((field) => {
         if (campaignData[field] !== undefined) {
-          formData.append(field, String(campaignData[field]));
+          // Xử lý đặc biệt cho boolean
+          const value =
+            typeof campaignData[field] === "boolean"
+              ? campaignData[field]
+                ? "true"
+                : "false"
+              : String(campaignData[field]);
+          formData.append(field, value);
         }
       });
 
@@ -124,7 +133,6 @@ export class CampaignService {
       if (imageFile) {
         formData.append("image", imageFile);
       }
-
       const token = TokenStorage.getAccessToken();
       const headers: Record<string, string> = {};
 
