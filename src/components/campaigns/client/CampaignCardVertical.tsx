@@ -357,7 +357,7 @@ const CampaignCardVertical: React.FC<CampaignCardVerticalProps> = ({
       {/* Action button with floating effect */}
       <div className="px-6 pb-6 pt-1">
         <Link
-          href={`/campaigns/${campaign.slug || campaign.id}`}
+          href={`/campaign/${campaign.slug || campaign.id}`}
           className="block w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white text-center py-3.5 px-4 rounded-xl font-medium transition-all duration-300 shadow-lg hover:shadow-indigo-500/30 relative overflow-hidden group"
         >
           <span className="relative z-10">Ủng hộ ngay</span>

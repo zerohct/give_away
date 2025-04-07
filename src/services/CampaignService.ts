@@ -173,7 +173,7 @@ export class CampaignService {
     try {
       const formData = new FormData();
 
-      // Append update data to formData
+      // Danh sách các trường cần gửi
       const fields: (keyof UpdateCampaignDTO)[] = [
         "title",
         "description",
@@ -187,13 +187,20 @@ export class CampaignService {
         "slug",
       ];
 
+      // Thêm các trường từ updateData vào formData
       fields.forEach((field) => {
         if (updateData[field] !== undefined) {
           formData.append(field, String(updateData[field]));
         }
       });
 
-      // If there is an image file, append it to formData
+      // Xử lý và thêm tags vào formData
+      if (updateData.tags !== undefined) {
+        // Nếu tags là mảng, chuyển thành chuỗi JSON
+        formData.append("tags", JSON.stringify(updateData.tags));
+      }
+
+      // Nếu có hình ảnh, thêm vào formData
       if (imageFile) {
         formData.append("image", imageFile);
       }
@@ -205,7 +212,7 @@ export class CampaignService {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      // Log FormData content for debugging
+      // Log FormData để kiểm tra dữ liệu gửi đi
       for (const [key, value] of formData.entries()) {
         console.log(`${key}: ${value}`);
       }
@@ -234,7 +241,6 @@ export class CampaignService {
       throw error;
     }
   }
-
   static async deleteCampaign(id: string | number): Promise<void> {
     try {
       const response = await ApiService.delete<ResponseData<null>>(

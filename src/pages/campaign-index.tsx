@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import CampaignCardVertical2 from "@/components/campaigns/client/CampaignCardVertical2";
+import { formatCurrency } from "@/lib/utils/format";
 const CampaignIndex: React.FC = () => {
   const { campaigns, loading, error, fetchCampaigns } = useCampaign();
   const [filteredCampaigns, setFilteredCampaigns] = useState<Campaign[]>([]);
@@ -279,7 +280,7 @@ const CampaignIndex: React.FC = () => {
               <TrendingUp className="w-8 h-8 mx-auto" />
             </div>
             <p className="text-2xl font-bold text-gray-800">
-              {formatTotalAmount(totalFundsRaised)}
+              {formatCurrency(totalFundsRaised)}
             </p>
             <p className="text-gray-500">Tổng số tiền gây quỹ</p>
           </div>

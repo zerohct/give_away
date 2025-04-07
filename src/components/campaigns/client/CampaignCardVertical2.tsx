@@ -244,7 +244,7 @@ const CampaignCardVertical2: React.FC<CampaignCardVertical2Props> = ({
       {/* Action button */}
       <div className="px-4 pb-4 pt-1">
         <Link
-          href={`/campaigns/${campaign.slug || campaign.id}`}
+          href={`/campaign/${campaign.slug || campaign.id}`}
           className={`block w-full bg-gradient-to-r ${getUrgencyColor()} hover:brightness-110 text-white text-center py-2 px-3 rounded-lg font-medium text-sm transition-all duration-300 shadow-md hover:shadow-lg relative overflow-hidden group`}
         >
           <span className="relative z-10">Ủng hộ ngay</span>

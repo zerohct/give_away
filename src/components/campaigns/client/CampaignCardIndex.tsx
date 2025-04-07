@@ -96,7 +96,7 @@ const CampaignCardIndex: React.FC<CampaignCardIndexProps> = ({ campaign }) => {
       {/* Action button with futuristic design */}
       <div className="px-7 pb-7">
         <Link
-          href={`/campaign/${campaign.id}/detail`}
+          href={`/campaign/${campaign.id}`}
           className="relative block w-full bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-700 hover:via-indigo-700 hover:to-blue-700 text-white text-center py-3.5 px-6 rounded-xl font-semibold uppercase tracking-wide transition-all duration-500 overflow-hidden group-hover:shadow-[0_0_25px_rgba(99,102,241,0.7)]"
         >
           <span className="relative z-10">Tìm hiểu thêm</span>
