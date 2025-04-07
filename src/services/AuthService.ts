@@ -108,7 +108,6 @@ export class AuthService {
             ? userData.roles[0].name
             : "user",
         avatar: userData.profileImage || undefined,
-        status: userData.isActive ? "active" : "inactive",
       };
 
       return user;

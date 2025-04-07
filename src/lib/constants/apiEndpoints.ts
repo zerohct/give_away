@@ -58,5 +58,12 @@ export const ENDPOINTS = {
     UPDATE_PROFILE: `${API_BASE_URL}/users/profile`,
     DONATION_HISTORY: `${API_BASE_URL}/users/donations`,
     VOLUNTEER_HISTORY: `${API_BASE_URL}/users/volunteer-history`,
+    LIST: `${API_BASE_URL}/admin/users`,
+    CREATE: `${API_BASE_URL}/admin/users`,
+    DETAILS: (id: string) => `${API_BASE_URL}/admin/users/${id}`,
+    UPDATE: (id: string) => `${API_BASE_URL}/admin/users/${id}`,
+    DELETE: (id: string) => `${API_BASE_URL}/admin/users/${id}`,
+    ROLES: `${API_BASE_URL}/users/roles`,
+    ADMIN_USERS: `${API_BASE_URL}/admin/users`,
   },
 };

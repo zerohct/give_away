@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { CreateUserData } from "@/types";
 
 interface FormErrors {
   [key: string]: string;
@@ -59,7 +60,7 @@ export default function CreateUserPage() {
       delete newErrors[name];
       setErrors(newErrors);
     }
-    
+
     // Clear server error when user makes changes
     if (serverError) {
       setServerError(null);
@@ -113,7 +114,7 @@ export default function CreateUserPage() {
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
-    
+
     if (formData.roleIds.length === 0) {
       newErrors.roleIds = "Please select at least one role";
     }
@@ -126,7 +127,7 @@ export default function CreateUserPage() {
     e.preventDefault();
     setFormSubmitted(true);
     setServerError(null);
-  
+
     if (!validate()) {
       // Nếu validation thất bại, chuyển sang tab có lỗi đầu tiên
       if (errors.firstName || errors.lastName || errors.email) {
@@ -138,20 +139,24 @@ export default function CreateUserPage() {
       }
       return;
     }
-  
+
     try {
       // Cập nhật dữ liệu người dùng theo đúng cấu trúc mà API yêu cầu
       const { confirmPassword, ...userData } = formData;
-  
+
       // Prepare user data according to CreateUserDTO interface
-      const userPayload = {
-        email: userData.email,
-        password: userData.password,
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        roles: userData.roleIds.map((id) => roleOptions.find((role) => role.id === id)?.name || ''), // Convert roleIds to role names
+      const userPayload: CreateUserData = {
+        user: {
+          email: userData.email,
+          password: userData.password,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        },
+        roles: userData.roleIds
+          .map((id) => roleOptions.find((role) => role.id === id)?.name || "")
+          .join(","),
       };
-  
+
       // Tạo người dùng thông qua hàm `createUser`
       const newUser = await createUser(userPayload);
       if (newUser) {
@@ -159,13 +164,15 @@ export default function CreateUserPage() {
       }
     } catch (error: any) {
       console.error("Failed to create user:", error);
-      setServerError(error.message || "Failed to create user. Please try again later.");
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setServerError(
+        error.message || "Failed to create user. Please try again later."
+      );
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } finally {
       setFormSubmitted(false);
     }
   };
-  
+
   const tabs = [
     { id: "basic", label: "Basic Information", icon: User },
     { id: "security", label: "Security", icon: Lock },
@@ -173,8 +180,8 @@ export default function CreateUserPage() {
   ];
 
   const roleOptions = [
-    { id: 1, name: "Admin", description: "Full system access and control" },
-    { id: 2, name: "User", description: "Standard user access" },
+    { id: 1, name: "admin", description: "Full system access and control" },
+    { id: 2, name: "user", description: "Standard user access" },
     { id: 3, name: "Editor", description: "Can edit content but not settings" },
     { id: 4, name: "Viewer", description: "Read-only access to content" },
   ];
@@ -194,21 +201,21 @@ export default function CreateUserPage() {
                       className={`flex flex-col items-center w-full ${
                         activeTab === tab.id
                           ? "text-blue-600"
-                          : index < tabs.findIndex(t => t.id === activeTab)
+                          : index < tabs.findIndex((t) => t.id === activeTab)
                           ? "text-green-600"
                           : "text-gray-400"
                       }`}
                     >
-                      <div 
+                      <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
                           activeTab === tab.id
                             ? "bg-blue-100 text-blue-600 ring-2 ring-blue-600 ring-offset-2"
-                            : index < tabs.findIndex(t => t.id === activeTab)
+                            : index < tabs.findIndex((t) => t.id === activeTab)
                             ? "bg-green-100 text-green-600"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >
-                        {index < tabs.findIndex(t => t.id === activeTab) ? (
+                        {index < tabs.findIndex((t) => t.id === activeTab) ? (
                           <CheckCircle className="h-5 w-5" />
                         ) : (
                           <tab.icon className="h-5 w-5" />
@@ -216,11 +223,11 @@ export default function CreateUserPage() {
                       </div>
                       <span className="text-sm font-medium">{tab.label}</span>
                     </button>
-                    
+
                     {index < tabs.length - 1 && (
-                      <div 
+                      <div
                         className={`absolute top-5 left-1/2 w-full h-0.5 ${
-                          index < tabs.findIndex(t => t.id === activeTab)
+                          index < tabs.findIndex((t) => t.id === activeTab)
                             ? "bg-green-500"
                             : "bg-gray-200"
                         }`}
@@ -235,7 +242,8 @@ export default function CreateUserPage() {
               <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
                 <h1 className="text-3xl font-bold">Create New User</h1>
                 <p className="opacity-90 mt-2">
-                  Add a new user to the system with specific roles and permissions
+                  Add a new user to the system with specific roles and
+                  permissions
                 </p>
               </div>
 
@@ -253,7 +261,8 @@ export default function CreateUserPage() {
                       <div className="mt-1 text-sm text-red-700">
                         <p>{serverError}</p>
                         <p className="mt-2 text-xs">
-                          Please check your input or try again later. If the problem persists, contact support.
+                          Please check your input or try again later. If the
+                          problem persists, contact support.
                         </p>
                       </div>
                     </div>
@@ -287,7 +296,9 @@ export default function CreateUserPage() {
                             onChange={handleInputChange}
                             placeholder="Enter first name"
                             className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition ${
-                              errors.firstName ? "border-red-500 bg-red-50" : "border-gray-300"
+                              errors.firstName
+                                ? "border-red-500 bg-red-50"
+                                : "border-gray-300"
                             }`}
                           />
                           {errors.firstName && (
@@ -309,7 +320,9 @@ export default function CreateUserPage() {
                             onChange={handleInputChange}
                             placeholder="Enter last name"
                             className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition ${
-                              errors.lastName ? "border-red-500 bg-red-50" : "border-gray-300"
+                              errors.lastName
+                                ? "border-red-500 bg-red-50"
+                                : "border-gray-300"
                             }`}
                           />
                           {errors.lastName && (
@@ -325,7 +338,10 @@ export default function CreateUserPage() {
                         <label className="block text-sm font-medium mb-1 text-gray-700">
                           <div className="flex items-center">
                             <Mail className="h-4 w-4 mr-1" />
-                            <span>Email Address <span className="text-red-500">*</span></span>
+                            <span>
+                              Email Address{" "}
+                              <span className="text-red-500">*</span>
+                            </span>
                           </div>
                         </label>
                         <input
@@ -335,7 +351,9 @@ export default function CreateUserPage() {
                           onChange={handleInputChange}
                           placeholder="user@example.com"
                           className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-300 focus:border-blue-500 transition ${
-                            errors.email ? "border-red-500 bg-red-50" : "border-gray-300"
+                            errors.email
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300"
                           }`}
                         />
                         {errors.email && (
@@ -383,7 +401,9 @@ export default function CreateUserPage() {
                         <label className="block text-sm font-medium mb-1 text-gray-700">
                           <div className="flex items-center">
                             <Lock className="h-4 w-4 mr-1" />
-                            <span>Password <span className="text-red-500">*</span></span>
+                            <span>
+                              Password <span className="text-red-500">*</span>
+                            </span>
                           </div>
                         </label>
                         <input
@@ -393,7 +413,9 @@ export default function CreateUserPage() {
                           onChange={handleInputChange}
                           placeholder="Enter password"
                           className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition ${
-                            errors.password ? "border-red-500 bg-red-50" : "border-gray-300"
+                            errors.password
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300"
                           }`}
                         />
                         {errors.password && (
@@ -411,7 +433,10 @@ export default function CreateUserPage() {
                         <label className="block text-sm font-medium mb-1 text-gray-700">
                           <div className="flex items-center">
                             <Lock className="h-4 w-4 mr-1" />
-                            <span>Confirm Password <span className="text-red-500">*</span></span>
+                            <span>
+                              Confirm Password{" "}
+                              <span className="text-red-500">*</span>
+                            </span>
                           </div>
                         </label>
                         <input
@@ -421,7 +446,9 @@ export default function CreateUserPage() {
                           onChange={handleInputChange}
                           placeholder="Confirm password"
                           className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-300 focus:border-purple-500 transition ${
-                            errors.confirmPassword ? "border-red-500 bg-red-50" : "border-gray-300"
+                            errors.confirmPassword
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300"
                           }`}
                         />
                         {errors.confirmPassword && (
@@ -466,7 +493,8 @@ export default function CreateUserPage() {
                         Roles & Permissions
                       </h2>
                       <p className="text-green-600 text-sm">
-                        Assign roles to determine what the user can access and modify
+                        Assign roles to determine what the user can access and
+                        modify
                       </p>
                     </div>
 
@@ -512,7 +540,11 @@ export default function CreateUserPage() {
                         ))}
                       </div>
 
-                      <div className={`bg-blue-50 rounded-lg p-4 border ${errors.roleIds ? "border-red-300" : "border-blue-200"}`}>
+                      <div
+                        className={`bg-blue-50 rounded-lg p-4 border ${
+                          errors.roleIds ? "border-red-300" : "border-blue-200"
+                        }`}
+                      >
                         <div className="flex items-center text-blue-700 mb-2">
                           <Shield className="h-5 w-5 mr-2" />
                           <span className="font-medium">Selected Roles</span>
@@ -520,7 +552,9 @@ export default function CreateUserPage() {
                         <div className="flex flex-wrap gap-2">
                           {formData.roleIds.length > 0 ? (
                             formData.roleIds.map((roleId) => {
-                              const role = roleOptions.find((r) => r.id === roleId);
+                              const role = roleOptions.find(
+                                (r) => r.id === roleId
+                              );
                               return role ? (
                                 <span
                                   key={roleId}
@@ -531,7 +565,9 @@ export default function CreateUserPage() {
                               ) : null;
                             })
                           ) : (
-                            <span className="text-gray-500 text-sm">No roles selected</span>
+                            <span className="text-gray-500 text-sm">
+                              No roles selected
+                            </span>
                           )}
                         </div>
                         {errors.roleIds && (
@@ -600,7 +636,9 @@ export default function CreateUserPage() {
                           ) : (
                             <UserPlus size={18} className="mr-1" />
                           )}
-                          {loading || formSubmitted ? "Creating..." : "Create User"}
+                          {loading || formSubmitted
+                            ? "Creating..."
+                            : "Create User"}
                         </button>
                       )}
                     </div>
