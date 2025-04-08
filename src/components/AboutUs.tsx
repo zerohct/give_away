@@ -6,7 +6,10 @@ import Link from "next/link";
 const AboutUs = () => {
   // Sử dụng dữ liệu từ appConfig
   const { site, features } = appConfig;
-
+  const imagePaths = {
+    heroBackground: "/images/logo/q.png",
+    missionImage: "/images/logo/q.png",
+  };
   return (
     <>
       <Head>
@@ -20,7 +23,7 @@ const AboutUs = () => {
           <div
             className="absolute inset-0 bg-black opacity-50"
             style={{
-              backgroundImage: "url('/images/hero-background.jpg')",
+              backgroundImage: `url('${imagePaths.heroBackground}')`,
               backgroundSize: "cover",
               backgroundPosition: "center",
               mixBlendMode: "overlay",
@@ -68,7 +71,7 @@ const AboutUs = () => {
               </div>
               <div className="md:w-1/2">
                 <img
-                  src="/images/mission-image.jpg"
+                  src={imagePaths.missionImage}
                   alt="Sứ mệnh của chúng tôi"
                   className="rounded-lg shadow-xl w-full h-auto"
                 />

@@ -15,25 +15,6 @@ export class UserService {
     }
   }
 
-  static async createUser(data: CreateUserData): Promise<User> {
-    try {
-      const payload = {
-        user: data.user,
-        roles: data.roles || ["user"],
-      };
-
-      const response = await ApiService.post<any>(
-        ENDPOINTS.USERS.ADMIN_USERS,
-        payload
-      );
-      toast.success(toastMessages.USER_CREATE_SUCCESS);
-      return this.transformUserData(response.data.data);
-    } catch (error) {
-      toast.error(toastMessages.USER_CREATE_ERROR);
-      throw error;
-    }
-  }
-
   static async updateUser(userId: number, data: UpdateUserData): Promise<User> {
     try {
       const response = await ApiService.put<any>(
@@ -84,15 +65,45 @@ export class UserService {
     }
   }
 
+  static async createUser(data: CreateUserData): Promise<User> {
+    try {
+      const payload = {
+        email: data.user.email,
+        password: data.user.password,
+        firstName: data.user.firstName || "",
+        lastName: data.user.lastName || "",
+        phone: data.user.phone || null,
+        roles: data.roles || "user",
+      };
+      console.log("Payload sent to server:", JSON.stringify(payload, null, 2));
+      const response = await ApiService.post<any>(
+        ENDPOINTS.USERS.ADMIN_USERS,
+        payload
+      );
+      toast.success(toastMessages.USER_CREATE_SUCCESS);
+      return this.transformUserData(response.data.data);
+    } catch (error: any) {
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+        throw new Error(error.response.data.message);
+      }
+      toast.error(toastMessages.USER_CREATE_ERROR);
+      throw error;
+    }
+  }
   private static transformUserData(userData: any): User {
+    // Nếu userData là null hoặc không có id, không throw lỗi ngay mà để caller xử lý
+    if (!userData || typeof userData.id !== "number") {
+      throw new Error("Invalid user data received from server");
+    }
     return {
       id: userData.id,
       email: userData.email,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      username: userData.username,
-      phone: userData.phone,
-      avatar: userData.profileImage,
+      firstName: userData.firstName || "",
+      lastName: userData.lastName || "",
+      username: userData.username || null,
+      phone: userData.phone || "",
+      profileImage: userData.profileImage || null,
       role: userData.roles?.[0]?.name || "user",
     };
   }

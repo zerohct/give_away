@@ -6,8 +6,15 @@ export interface User {
   username?: string | null;
   phone?: string;
   role: string;
-  avatar?: string;
+  profileImage?: string;
 }
+
+export interface Role {
+  id: number;
+  name: string;
+  description: string;
+}
+
 export interface CreateUserData {
   user: {
     email: string;

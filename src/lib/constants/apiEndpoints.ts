@@ -41,7 +41,9 @@ export const ENDPOINTS = {
     DELETE: (id: string) => `${API_BASE_URL}/volunteers/${id}`,
     EVENTS: `${API_BASE_URL}/volunteers/events`,
   },
-
+  ROLES: {
+    LIST: `${API_BASE_URL}/admin/roles`,
+  },
   // Events
   EVENTS: {
     LIST: `${API_BASE_URL}/events`,

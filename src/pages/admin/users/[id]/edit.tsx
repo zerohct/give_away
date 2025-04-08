@@ -1,10 +1,11 @@
+// EditUserPage.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/context/UserContext";
+import { useRoles } from "@/context/RoleContext";
 import AdminLayout from "@/components/layouts/AdminLayout";
-import { UpdateUserData, User } from "@/types";
 import {
   Loader,
   X,
@@ -13,7 +14,12 @@ import {
   Phone,
   Shield,
   UserCheck,
+  Tag,
+  ChevronRight,
+  Plus,
+  AlertTriangle,
 } from "lucide-react";
+import { UpdateUserData } from "@/types";
 
 interface FormErrors {
   [key: string]: string;
@@ -21,72 +27,86 @@ interface FormErrors {
 
 export default function EditUserPage() {
   const router = useRouter();
-  // Extract user ID from the URL
   const [userId, setUserId] = useState<string>("");
   const { fetchUserById, updateUser, loading } = useUser();
+  const { roles, loading: rolesLoading, error: rolesError } = useRoles();
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<string>("basic");
+  const [serverError, setServerError] = useState<string | null>(null);
+  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
 
   // Form state
-  const [formData, setFormData] = useState<UpdateUserData>({
+  const [formData, setFormData] = useState({
     email: "",
     firstName: "",
     lastName: "",
     phone: "",
-    roles: "USER",
+    password: "",
+    roleIds: [] as number[],
   });
 
   // Avatar preview state
   const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  // Extract the user ID from the URL when component mounts
+  // Extract user ID from URL
   useEffect(() => {
     if (typeof window !== "undefined") {
       const path = window.location.pathname;
       const pathParts = path.split("/");
-      // Extract the ID from the URL path (e.g., /admin/users/3/edit)
-      // The ID should be at index position before 'edit'
       const editIndex = pathParts.indexOf("edit");
       if (editIndex > 0) {
         const id = pathParts[editIndex - 1];
         if (id && !isNaN(Number(id))) {
           setUserId(id);
         } else {
-          console.error(
-            "User ID could not be extracted from URL or is not a valid number"
-          );
+          console.error("Invalid user ID in URL");
           router.push("/admin/users");
         }
       } else {
-        console.error("URL structure is not as expected");
+        console.error("Unexpected URL structure");
         router.push("/admin/users");
       }
     }
   }, [router]);
 
+  // Load user data
   useEffect(() => {
     const loadUser = async () => {
-      if (!userId) {
-        return; // Wait until userId is set
-      }
+      if (!userId || rolesLoading || rolesError) return;
 
       setIsLoading(true);
       try {
         const user = await fetchUserById(parseInt(userId));
         if (user) {
+          // Giả sử API trả về danh sách roleIds hoặc roles dưới dạng mảng
+          const userRoleIds = user.role
+            ? (Array.isArray(user.role) ? user.role : user.role.split(","))
+                .map((role: string | number) => {
+                  // Nếu roles là mảng tên, tìm ID tương ứng trong danh sách roles
+                  if (typeof role === "string") {
+                    const matchedRole = roles.find(
+                      (r) => r.name.toLowerCase() === role.toLowerCase()
+                    );
+                    return matchedRole ? matchedRole.id : null;
+                  }
+                  // Nếu roles đã là mảng ID
+                  return role;
+                })
+                .filter((id: number | null) => id !== null)
+            : [];
+
           setFormData({
+            email: user.email || "",
             firstName: user.firstName || "",
             lastName: user.lastName || "",
-            email: user.email || "",
             phone: user.phone || "",
-            roles: user.role ? user.role : "USER",
+            password: "",
+            roleIds: userRoleIds as number[],
           });
-
-          // Set avatar preview if available
-          if (user.avatar) {
-            setAvatarPreview(user.avatar);
+          if (user.profileImage) {
+            setAvatarPreview(user.profileImage);
           }
         } else {
           console.error("User not found");
@@ -94,13 +114,14 @@ export default function EditUserPage() {
         }
       } catch (error) {
         console.error("Failed to load user:", error);
+        setServerError("Failed to load user data. Please try again.");
       } finally {
         setIsLoading(false);
       }
     };
 
     loadUser();
-  }, [userId, fetchUserById, router]);
+  }, [userId, fetchUserById, roles, rolesLoading, rolesError, router]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -123,32 +144,38 @@ export default function EditUserPage() {
       [name]: value,
     });
 
-    // Clear error for this field if exists
     if (errors[name]) {
       const newErrors = { ...errors };
       delete newErrors[name];
       setErrors(newErrors);
     }
+    if (serverError) setServerError(null);
   };
 
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target;
+  const addRole = (roleId: number) => {
+    if (!formData.roleIds.includes(roleId)) {
+      setFormData({
+        ...formData,
+        roleIds: [...formData.roleIds, roleId],
+      });
+    }
+    if (errors.roleIds) {
+      const newErrors = { ...errors };
+      delete newErrors.roleIds;
+      setErrors(newErrors);
+    }
+    setShowRoleDropdown(false);
+  };
+
+  const removeRole = (roleId: number) => {
     setFormData({
       ...formData,
-      roles: value,
+      roleIds: formData.roleIds.filter((id) => id !== roleId),
     });
   };
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
-
-    if (!formData.firstName || formData.firstName.trim().length < 2) {
-      newErrors.firstName = "First name must be at least 2 characters";
-    }
-
-    if (!formData.lastName || formData.lastName.trim().length < 2) {
-      newErrors.lastName = "Last name must be at least 2 characters";
-    }
 
     if (!formData.email) {
       newErrors.email = "Email is required";
@@ -160,25 +187,51 @@ export default function EditUserPage() {
       newErrors.phone = "Please enter a valid phone number";
     }
 
+    if (formData.roleIds.length === 0) {
+      newErrors.roleIds = "Please select at least one role";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setServerError(null);
 
     if (!validate()) {
+      if (errors.email) setActiveTab("basic");
+      else if (errors.roleIds) setActiveTab("access");
       return;
     }
 
     try {
-      const updatedUser = await updateUser(parseInt(userId), formData);
+      const roleNames = formData.roleIds
+        .map((id) => roles.find((role) => role.id === id)?.name || "")
+        .filter(Boolean);
+
+      const updateData: UpdateUserData = {
+        email: formData.email,
+        firstName: formData.firstName || "",
+        lastName: formData.lastName || "",
+        phone: formData.phone || undefined,
+        password: formData.password || undefined,
+        roles: roleNames.join(","),
+      };
+
+      console.log("Payload sent to server:", updateData);
+
+      const updatedUser = await updateUser(parseInt(userId), updateData);
 
       if (updatedUser) {
         router.push("/admin/users");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update user:", error);
+      const errorMessage =
+        error.message || "Failed to update user. Please try again.";
+      setServerError(errorMessage);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -187,12 +240,35 @@ export default function EditUserPage() {
     { id: "access", label: "Access & Roles", icon: Shield },
   ];
 
-  if (isLoading) {
+  if (isLoading || rolesLoading) {
     return (
       <AdminLayout>
         <div className="container mx-auto p-4 flex justify-center items-center h-64">
           <Loader className="animate-spin mr-2" />
           <span>Loading user data...</span>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (rolesError) {
+    return (
+      <AdminLayout>
+        <div className="container mx-auto p-4">
+          <div className="bg-red-50 p-4 rounded-lg text-red-700 text-sm flex items-start">
+            <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium">Failed to load roles</p>
+              <p className="mt-1">{rolesError}</p>
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                className="mt-2 text-red-600 hover:text-red-800 font-medium"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -211,7 +287,22 @@ export default function EditUserPage() {
                 </p>
               </div>
 
-              {/* Tabs Navigation */}
+              {serverError && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 m-6">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                      <X className="h-5 w-5 text-red-500" />
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">
+                        Error
+                      </h3>
+                      <p className="text-sm text-red-700">{serverError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex border-b border-gray-200">
                 {tabs.map((tab) => (
                   <button
@@ -230,7 +321,6 @@ export default function EditUserPage() {
               </div>
 
               <form onSubmit={onSubmit} className="p-6">
-                {/* Tab 1: Basic Information */}
                 <div className={activeTab === "basic" ? "block" : "hidden"}>
                   <div className="space-y-6">
                     <div className="bg-blue-50 rounded-lg p-5 border-l-4 border-blue-500">
@@ -280,7 +370,7 @@ export default function EditUserPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label className="block text-sm font-medium mb-1 text-gray-700">
-                              First Name <span className="text-red-500">*</span>
+                              First Name
                             </label>
                             <input
                               type="text"
@@ -303,7 +393,7 @@ export default function EditUserPage() {
 
                           <div>
                             <label className="block text-sm font-medium mb-1 text-gray-700">
-                              Last Name <span className="text-red-500">*</span>
+                              Last Name
                             </label>
                             <input
                               type="text"
@@ -390,7 +480,6 @@ export default function EditUserPage() {
                       <p className="text-yellow-700 text-sm mb-3">
                         Leave blank to keep the current password
                       </p>
-
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium mb-1 text-gray-700">
@@ -410,7 +499,6 @@ export default function EditUserPage() {
                   </div>
                 </div>
 
-                {/* Tab 2: Access & Roles */}
                 <div className={activeTab === "access" ? "block" : "hidden"}>
                   <div className="space-y-6">
                     <div className="bg-indigo-50 rounded-lg p-5 border-l-4 border-indigo-500">
@@ -426,65 +514,149 @@ export default function EditUserPage() {
                       <label className="block text-sm font-medium mb-3 text-gray-700">
                         <div className="flex items-center">
                           <Shield className="h-5 w-5 mr-2" />
-                          <span>Assigned Role</span>
+                          <span>
+                            Assigned Roles{" "}
+                            <span className="text-red-500">*</span>
+                          </span>
                         </div>
                       </label>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="relative">
-                          <select
-                            name="role"
-                            value={formData.roles}
-                            onChange={handleRoleChange}
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-500 transition appearance-none"
-                          >
-                            <option value="user">User</option>
-                            <option value="admin">Administrator</option>
-                            <option value="EDITOR">Editor</option>
-                            <option value="VIEWER">Viewer</option>
-                          </select>
-                          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <svg
-                              className="fill-current h-4 w-4"
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                            </svg>
+                      <div className="relative">
+                        <div
+                          className={`border ${
+                            errors.roleIds
+                              ? "border-red-500 bg-red-50"
+                              : "border-gray-300"
+                          } rounded-lg p-2 min-h-16 flex flex-wrap gap-2 cursor-pointer mb-2`}
+                          onClick={() => setShowRoleDropdown(!showRoleDropdown)}
+                        >
+                          {formData.roleIds.length > 0 ? (
+                            formData.roleIds.map((roleId) => {
+                              const role = roles.find((r) => r.id === roleId);
+                              return role ? (
+                                <div
+                                  key={roleId}
+                                  className="bg-indigo-100 text-indigo-800 px-3 py-1.5 rounded-full text-sm flex items-center"
+                                >
+                                  <Tag className="h-3 w-3 mr-1" />
+                                  {role.name}
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      removeRole(roleId);
+                                    }}
+                                    className="ml-1 hover:bg-indigo-200 rounded-full p-1"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              ) : null;
+                            })
+                          ) : (
+                            <div className="text-gray-500 p-2 flex items-center">
+                              <Plus className="h-4 w-4 mr-1" />
+                              Click to add roles
+                            </div>
+                          )}
+
+                          <div className="absolute right-3 top-4 text-gray-400">
+                            <ChevronRight
+                              className={`h-5 w-5 transition-transform ${
+                                showRoleDropdown ? "rotate-90" : ""
+                              }`}
+                            />
                           </div>
                         </div>
+
+                        {errors.roleIds && (
+                          <p className="text-red-500 text-sm mt-1 flex items-center">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            {errors.roleIds}
+                          </p>
+                        )}
+
+                        {showRoleDropdown && (
+                          <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-72 overflow-y-auto">
+                            <div className="p-2 text-xs text-gray-500 bg-gray-50 border-b">
+                              Select roles to assign to this user
+                            </div>
+                            {roles.length === 0 ? (
+                              <div className="p-4 text-center text-gray-600">
+                                No roles available
+                              </div>
+                            ) : (
+                              <div>
+                                {roles
+                                  .filter(
+                                    (role) =>
+                                      !formData.roleIds.includes(role.id)
+                                  )
+                                  .map((role) => (
+                                    <div
+                                      key={role.id}
+                                      onClick={() => addRole(role.id)}
+                                      className="p-3 hover:bg-indigo-50 cursor-pointer border-b last:border-b-0 transition-colors"
+                                    >
+                                      <div className="flex items-center justify-between">
+                                        <div>
+                                          <p className="font-medium text-gray-800">
+                                            {role.name}
+                                          </p>
+                                          {role.description && (
+                                            <p className="text-sm text-gray-500 mt-0.5">
+                                              {role.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <div className="h-6 w-6 rounded-full border border-gray-300 flex items-center justify-center">
+                                          <Plus className="h-4 w-4 text-indigo-600" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
 
-                      <div className="mt-4">
-                        <div className="bg-indigo-50 rounded-lg p-4 border border-indigo-100">
-                          <h4 className="font-medium text-indigo-800 mb-2">
-                            Role Description
-                          </h4>
-                          {formData.roles === "ADMIN" ? (
-                            <p className="text-sm text-indigo-700">
-                              Administrators have full access to all features
-                              and can manage users, content, and system
-                              settings.
-                            </p>
-                          ) : formData.roles === "EDITOR" ? (
-                            <p className="text-sm text-indigo-700">
-                              Editors can create and manage content but cannot
-                              access system settings or user management.
-                            </p>
-                          ) : formData.roles === "VIEWER" ? (
-                            <p className="text-sm text-indigo-700">
-                              Viewers have read-only access to content and
-                              cannot make changes or access administrative
-                              features.
-                            </p>
-                          ) : (
-                            <p className="text-sm text-indigo-700">
-                              Standard users can access basic features but have
-                              no administrative privileges.
-                            </p>
-                          )}
+                      {formData.roleIds.length > 0 && (
+                        <div className="mt-4 bg-indigo-50 rounded-lg p-4 border border-indigo-100">
+                          <div className="flex items-center text-indigo-700 mb-3">
+                            <Shield className="h-5 w-5 mr-2" />
+                            <span className="font-medium">
+                              Selected Role Permissions
+                            </span>
+                          </div>
+                          <div className="space-y-3">
+                            {formData.roleIds.map((roleId) => {
+                              const role = roles.find((r) => r.id === roleId);
+                              return role ? (
+                                <div
+                                  key={roleId}
+                                  className="bg-white p-3 rounded border border-indigo-100"
+                                >
+                                  <div className="flex items-center">
+                                    <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center mr-3">
+                                      <Shield className="h-4 w-4 text-indigo-600" />
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium">
+                                        {role.name}
+                                      </h4>
+                                      <p className="text-sm text-gray-500">
+                                        {role.description ||
+                                          "No description available"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : null;
+                            })}
+                          </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>

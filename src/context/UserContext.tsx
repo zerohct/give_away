@@ -10,14 +10,16 @@ export const useUser = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
+    console.log("fetchUsers called");
     setLoading(true);
     setError(null);
     try {
       const data = await UserService.getAllUsers();
       setUsers(data);
     } catch (err: any) {
+      console.error("Error fetching users:", err);
       setError(err.message || "Failed to fetch users list.");
-      throw err; // Re-throw to allow handling in components
+      throw err;
     } finally {
       setLoading(false);
     }

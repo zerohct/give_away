@@ -33,13 +33,13 @@ const Campaign: React.FC = () => {
           <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-24 h-1 bg-yellow-400 rounded"></span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayedCampaigns.map((campaign) => (
-            <CampaignCardIndex key={campaign.id} campaign={campaign} />
-          ))}
-        </div>
-
-        {campaigns.length === 0 && (
+        {displayedCampaigns.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayedCampaigns.map((campaign) => (
+              <CampaignCardIndex key={campaign.id} campaign={campaign} />
+            ))}
+          </div>
+        ) : (
           <div className="text-center py-12">
             <p className="text-gray-500">Hiện chưa có chiến dịch nào.</p>
           </div>
